@@ -3,3 +3,6 @@ dist/
 coverage/
 *.tsbuildinfo
 .DS_Store
+
+# Local SDD scratch (briefs, review diffs) — never commit to this public repo
+.superpowers/
