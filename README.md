@@ -5,8 +5,8 @@ forms and live vehicle tracking.
 
 ## Packages
 
-| Package | Description |
-| --- | --- |
+| Package                                       | Description                           |
+| --------------------------------------------- | ------------------------------------- |
 | [`@snowtrackerpro/sdk-core`](./packages/core) | Shared client + publishable-key auth. |
 
 More packages (React quote + tracking widgets, a `<script>`-tag embed) are coming.
