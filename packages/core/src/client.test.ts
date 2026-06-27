@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createClient } from './client.js';
-import { SnowTrackerError } from './errors.js';
 
 const SAMPLE = {
   tenant_id: 'org_1',
@@ -26,7 +25,9 @@ afterEach(() => {
 
 describe('createClient', () => {
   it('throws config_error on an empty key', () => {
-    expect(() => createClient({ publishableKey: '' })).toThrow(SnowTrackerError);
+    expect(() => createClient({ publishableKey: '' })).toThrow(
+      expect.objectContaining({ code: 'config_error' }),
+    );
   });
 
   it('sends the publishable-key header against the default base URL', async () => {
@@ -68,6 +69,22 @@ describe('createClient', () => {
     await expect(createClient({ publishableKey: 'pk_test_x' }).getTenant()).rejects.toMatchObject({
       code: 'unauthorized',
       status: 401,
+    });
+  });
+
+  it('maps a 403 to a forbidden SnowTrackerError', async () => {
+    vi.stubGlobal('fetch', mockFetchOnce({ detail: 'no' }, { ok: false, status: 403 }));
+    await expect(createClient({ publishableKey: 'pk_test_x' }).getTenant()).rejects.toMatchObject({
+      code: 'forbidden',
+      status: 403,
+    });
+  });
+
+  it('maps a 404 to a not_found SnowTrackerError', async () => {
+    vi.stubGlobal('fetch', mockFetchOnce({ detail: 'gone' }, { ok: false, status: 404 }));
+    await expect(createClient({ publishableKey: 'pk_test_x' }).getTenant()).rejects.toMatchObject({
+      code: 'not_found',
+      status: 404,
     });
   });
 
