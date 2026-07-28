@@ -1,6 +1,6 @@
 {
   "name": "@snowtrackerpro/sdk-core",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Core client for the SnowTracker.pro SDKs (publishable-key auth).",
   "license": "MIT",
   "type": "module",
