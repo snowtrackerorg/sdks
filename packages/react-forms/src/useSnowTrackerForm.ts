@@ -125,20 +125,28 @@ function applyOverrides(schema: FormSchema, overrides?: FormOverrides): FormSche
   return { ...schema, fields };
 }
 
-// Dev-time guardrail: the server requires name + address + (email or
-// phone) on EVERY lead — hiding them without setting values
-// programmatically guarantees failed submissions.
-function warnHiddenInvariants(hide?: (LeadFieldKey | CustomFieldKey)[]): void {
+// Dev-time guardrail: the server requires name + (email or phone) on
+// EVERY lead, and address on quote-kind forms — hiding them without
+// setting values programmatically guarantees failed submissions. The
+// address warning is per-form-kind: contact forms don't require an
+// address, so hiding it there is fine.
+function warnHiddenInvariants(
+  hide: (LeadFieldKey | CustomFieldKey)[] | undefined,
+  kind: FormKind,
+): void {
   if (!hide || hide.length === 0) return;
   const nodeEnv = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
     ?.NODE_ENV;
   if (nodeEnv === 'production') return;
-  for (const key of ['name', 'address'] as const) {
-    if (hide.includes(key)) {
-      console.warn(
-        `[snowtracker] overrides.hideFields includes "${key}", but the server requires ${key} on every lead — submissions will fail unless you set it via setValue().`,
-      );
-    }
+  if (hide.includes('name')) {
+    console.warn(
+      '[snowtracker] overrides.hideFields includes "name", but the server requires name on every lead — submissions will fail unless you set it via setValue().',
+    );
+  }
+  if (kind === 'quote' && hide.includes('address')) {
+    console.warn(
+      '[snowtracker] overrides.hideFields includes "address", but the server requires address on every quote lead — submissions will fail unless you set it via setValue().',
+    );
   }
   if (hide.includes('email') && hide.includes('phone')) {
     console.warn(
@@ -200,9 +208,14 @@ export function useSnowTrackerForm(options: UseSnowTrackerFormOptions): UseSnowT
   // must collapse before any re-render happens.
   const inFlightRef = useRef(false);
 
+  // Warn once the (base) schema is known — the address warning depends on
+  // the form's kind, which a formId-only mount learns from the fetch.
+  const warnedRef = useRef(false);
   useEffect(() => {
-    warnHiddenInvariants(overridesRef.current?.hideFields);
-  }, []);
+    if (schema === null || warnedRef.current) return;
+    warnedRef.current = true;
+    warnHiddenInvariants(overridesRef.current?.hideFields, baseSchemaRef.current?.kind ?? 'quote');
+  }, [schema]);
 
   useEffect(() => {
     const pinnedSchema = overridesRef.current?.pinnedSchema;

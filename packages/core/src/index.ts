@@ -15,7 +15,7 @@ export type {
   Urgency,
 } from './catalog.js';
 export { validateExtra, validateLead } from './validate.js';
-export type { LeadFieldErrors } from './validate.js';
+export type { LeadFieldErrors, ValidatableSchema } from './validate.js';
 export type {
   ClientOptions,
   FormBranding,

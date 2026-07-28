@@ -374,15 +374,58 @@ describe('useSnowTrackerForm', () => {
     expect(fields[4]?.label).toBe('Surface?');
   });
 
-  it('warns in dev when hideFields hides invariant fields', async () => {
+  it('warns in dev when hideFields hides invariant fields on a quote form', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const client = fakeClient();
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useSnowTrackerForm({ client, overrides: { hideFields: ['address', 'email', 'phone'] } }),
     );
+    await waitFor(() => expect(result.current.status).toBe('ready'));
     const messages = warn.mock.calls.map((c) => String(c[0]));
     expect(messages.some((m) => m.includes('"address"'))).toBe(true);
     expect(messages.some((m) => m.includes('both "email" and "phone"'))).toBe(true);
+  });
+
+  it('does not warn about hiding address on a contact form (per-kind invariant)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const contactSchema: FormSchema = {
+      ...SCHEMA,
+      kind: 'contact',
+      name: 'Contact us',
+      fields: SCHEMA.fields.map((f) => (f.key === 'address' ? { ...f, required: false } : f)),
+    };
+    const client = fakeClient({ getFormSchema: vi.fn().mockResolvedValue(contactSchema) });
+    const { result } = renderHook(() =>
+      useSnowTrackerForm({ client, kind: 'contact', overrides: { hideFields: ['address', 'name'] } }),
+    );
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    const messages = warn.mock.calls.map((c) => String(c[0]));
+    expect(messages.some((m) => m.includes('"address"'))).toBe(false);
+    // name stays required on every kind.
+    expect(messages.some((m) => m.includes('"name"'))).toBe(true);
+  });
+
+  it('submits a contact form without an address', async () => {
+    const contactSchema: FormSchema = {
+      ...SCHEMA,
+      kind: 'contact',
+      name: 'Contact us',
+      fields: SCHEMA.fields.map((f) => (f.key === 'address' ? { ...f, required: false } : f)),
+    };
+    const client = fakeClient({ getFormSchema: vi.fn().mockResolvedValue(contactSchema) });
+    const { result } = renderHook(() => useSnowTrackerForm({ client, kind: 'contact' }));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    act(() => {
+      result.current.setValue('name', 'Jane Doe');
+      result.current.setValue('email', 'jane@example.com');
+    });
+    await act(() => result.current.submit());
+
+    expect(result.current.errors).toEqual({});
+    expect(result.current.submitted).toBe(true);
+    expect(client.submitLead).toHaveBeenCalledWith(
+      expect.objectContaining({ fields: { name: 'Jane Doe', email: 'jane@example.com' } }),
+    );
   });
 
   it('routes override-added fields the server does not know into extra', async () => {

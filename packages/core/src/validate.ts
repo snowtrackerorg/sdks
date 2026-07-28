@@ -6,6 +6,9 @@ import {
 } from './catalog.js';
 import type { FormField, FormSchema } from './types.js';
 
+/** The schema shape `validateLead` needs: the fields, plus (optionally) the form kind. */
+export type ValidatableSchema = Pick<FormSchema, 'fields'> & Partial<Pick<FormSchema, 'kind'>>;
+
 /** Per-field validation messages, keyed by field key (`address.line1` for address parts). */
 export type LeadFieldErrors = Record<string, string>;
 
@@ -25,16 +28,18 @@ function byteLength(s: string): number {
  * (POST /v1/sdk/leads): unknown keys, enum membership, per-field length
  * caps (in bytes, as the server counts), required fields per the schema,
  * and the server invariants that hold regardless of tenant config —
- * name, email-or-phone, address.
+ * name, email-or-phone, and (on quote forms) address.
+ *
+ * The address invariant is per-form-kind: required when
+ * `schema.kind === 'quote'`, optional on contact schemas (format and caps
+ * still validate when a value is provided). A schema without `kind` gets
+ * quote behaviour — the stricter side, and the server's default kind.
  *
  * Unlike the server (which reports the first violation), all errors are
  * collected. An empty result means the submission passes client-side.
  * Pure function: no I/O, no mutation.
  */
-export function validateLead(
-  schema: Pick<FormSchema, 'fields'>,
-  fields: LeadFieldValues,
-): LeadFieldErrors {
+export function validateLead(schema: ValidatableSchema, fields: LeadFieldValues): LeadFieldErrors {
   const errors: LeadFieldErrors = {};
   const schemaByKey = new Map<string, FormField>(schema.fields.map((f) => [f.key, f]));
 
@@ -95,7 +100,11 @@ export function validateLead(
   ) {
     errors.email = 'email or phone is required';
   }
-  if (errors.address === undefined && addressFormatted(fields.address) === '') {
+  if (
+    (schema.kind ?? 'quote') === 'quote' &&
+    errors.address === undefined &&
+    addressFormatted(fields.address) === ''
+  ) {
     errors.address = 'required';
   }
 
