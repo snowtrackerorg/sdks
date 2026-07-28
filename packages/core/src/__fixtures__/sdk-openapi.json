@@ -1,0 +1,427 @@
+{
+  "servers": [
+    {
+      "description": "This API",
+      "url": "/v1"
+    }
+  ],
+  "paths": {
+    "/sdk/forms": {
+      "get": {
+        "operationId": "sdk-get-default-form",
+        "parameters": [
+          {
+            "description": "Which default form to resolve.",
+            "explode": false,
+            "in": "query",
+            "name": "kind",
+            "schema": {
+              "default": "quote",
+              "description": "Which default form to resolve.",
+              "enum": ["quote", "contact"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SDKFormBody"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "summary": "Default form schema by kind for embeddable SDKs (publishable-key auth).",
+        "tags": ["sdk"]
+      }
+    },
+    "/sdk/forms/{form_id}": {
+      "get": {
+        "operationId": "sdk-get-form",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "form_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SDKFormBody"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "summary": "Form schema by id for embeddable SDKs (publishable-key auth).",
+        "tags": ["sdk"]
+      }
+    },
+    "/sdk/leads": {
+      "post": {
+        "operationId": "sdk-create-lead",
+        "parameters": [
+          {
+            "description": "Recorded on the submission for audit.",
+            "in": "header",
+            "name": "Origin",
+            "schema": {
+              "description": "Recorded on the submission for audit.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Recorded on the submission for audit.",
+            "in": "header",
+            "name": "User-Agent",
+            "schema": {
+              "description": "Recorded on the submission for audit.",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SDKLeadInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SDKLeadBody"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "summary": "Submit a lead from an embedded form (publishable-key auth, quotes:create scope).",
+        "tags": ["sdk"]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "description": "Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'",
+            "type": "string"
+          },
+          "message": {
+            "description": "Error message text",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value at the given location"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorModel": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["/v1/ErrorModel.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation specific to this occurrence of the problem.",
+            "examples": ["Property foo is required but is missing."],
+            "type": "string"
+          },
+          "errors": {
+            "description": "Optional list of individual error details",
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": ["array", "null"]
+          },
+          "instance": {
+            "description": "A URI reference that identifies the specific occurrence of the problem.",
+            "examples": ["https://example.com/error-log/abc123"],
+            "format": "uri",
+            "type": "string"
+          },
+          "status": {
+            "description": "HTTP status code",
+            "examples": [400],
+            "format": "int64",
+            "type": "integer"
+          },
+          "title": {
+            "description": "A short, human-readable summary of the problem type. This value should not change between occurrences of the error.",
+            "examples": ["Bad Request"],
+            "type": "string"
+          },
+          "type": {
+            "default": "about:blank",
+            "description": "A URI reference to human-readable documentation for the error.",
+            "examples": ["https://example.com/errors/example"],
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MergedField": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "maps_to": {
+            "type": "string"
+          },
+          "max_len": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/Option"
+            },
+            "type": ["array", "null"]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": ["key", "type", "label", "required", "max_len"],
+        "type": "object"
+      },
+      "Option": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": ["value", "label"],
+        "type": "object"
+      },
+      "SDKCaptchaBody": {
+        "additionalProperties": false,
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "sitekey": {
+            "type": "string"
+          }
+        },
+        "required": ["provider", "sitekey"],
+        "type": "object"
+      },
+      "SDKFormBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["/v1/SDKFormBody.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "branding": {
+            "$ref": "#/components/schemas/SDKFormBranding"
+          },
+          "captcha": {
+            "$ref": "#/components/schemas/SDKCaptchaBody"
+          },
+          "catalog_version": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/MergedField"
+            },
+            "type": ["array", "null"]
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "catalog_version",
+          "fields",
+          "branding",
+          "captcha",
+          "token"
+        ],
+        "type": "object"
+      },
+      "SDKFormBranding": {
+        "additionalProperties": false,
+        "properties": {
+          "logo_url": {
+            "type": "string"
+          },
+          "primary_hex": {
+            "type": "string"
+          },
+          "tenant_name": {
+            "type": "string"
+          }
+        },
+        "required": ["tenant_name", "logo_url", "primary_hex"],
+        "type": "object"
+      },
+      "SDKLeadBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["/v1/SDKLeadBody.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submission_id": {
+            "type": "string"
+          }
+        },
+        "required": ["submission_id", "status"],
+        "type": "object"
+      },
+      "SDKLeadInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["/v1/SDKLeadInputBody.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "captcha_token": {
+            "description": "Turnstile response token, required when the form schema carries a captcha block.",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "extra": {
+            "additionalProperties": {},
+            "description": "Bounded escape hatch: ≤10 keys, ≤1KB each, archived verbatim.",
+            "type": "object"
+          },
+          "fields": {
+            "additionalProperties": {},
+            "description": "Catalog-keyed answers. Unknown keys are rejected (422 naming the key).",
+            "type": "object"
+          },
+          "form_id": {
+            "description": "The form this submission answers (from GET /sdk/forms).",
+            "maxLength": 64,
+            "type": "string"
+          },
+          "token": {
+            "description": "Signed issued-at token from GET /sdk/forms.",
+            "maxLength": 512,
+            "type": "string"
+          },
+          "website": {
+            "description": "Honeypot — leave empty.",
+            "type": "string"
+          }
+        },
+        "required": ["form_id", "fields", "token"],
+        "type": "object"
+      }
+    }
+  }
+}

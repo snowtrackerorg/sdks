@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Typecheck and tests resolve sdk-core from source so they work before
+    // the workspace is built. tsup builds with tsconfig.build.json (no
+    // paths) so the published d.ts imports the real package.
+    "paths": {
+      "@snowtrackerpro/sdk-core": ["../core/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

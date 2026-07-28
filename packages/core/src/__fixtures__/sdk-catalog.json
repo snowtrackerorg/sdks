@@ -1,0 +1,159 @@
+{
+  "catalog_version": 1,
+  "fields": [
+    {
+      "key": "name",
+      "type": "text",
+      "label": "Full name",
+      "max_len": 200,
+      "maps_to": "customer.name"
+    },
+    {
+      "key": "email",
+      "type": "email",
+      "label": "Email",
+      "max_len": 254,
+      "maps_to": "customer.email"
+    },
+    {
+      "key": "phone",
+      "type": "phone",
+      "label": "Phone",
+      "max_len": 30,
+      "maps_to": "customer.mobile_phone"
+    },
+    {
+      "key": "address",
+      "type": "text",
+      "label": "Property address",
+      "max_len": 300,
+      "maps_to": "property.address"
+    },
+    {
+      "key": "driveway_surface",
+      "type": "select",
+      "label": "Driveway surface",
+      "max_len": 32,
+      "options": [
+        {
+          "value": "paved",
+          "label": "Paved — asphalt, concrete, or interlock"
+        },
+        {
+          "value": "gravel",
+          "label": "Gravel"
+        },
+        {
+          "value": "grass",
+          "label": "Grass"
+        },
+        {
+          "value": "unpaved_other",
+          "label": "Other unpaved"
+        },
+        {
+          "value": "none",
+          "label": "No driveway (walkways only)"
+        }
+      ],
+      "maps_to": "property.driveway_surface"
+    },
+    {
+      "key": "service_type",
+      "type": "select",
+      "label": "Service type",
+      "max_len": 32,
+      "options": [
+        {
+          "value": "residential",
+          "label": "Residential"
+        },
+        {
+          "value": "commercial",
+          "label": "Commercial"
+        }
+      ]
+    },
+    {
+      "key": "urgency",
+      "type": "select",
+      "label": "When do you need service?",
+      "max_len": 32,
+      "options": [
+        {
+          "value": "seasonal",
+          "label": "Seasonal contract"
+        },
+        {
+          "value": "on_demand",
+          "label": "As needed"
+        },
+        {
+          "value": "emergency",
+          "label": "As soon as possible"
+        }
+      ]
+    },
+    {
+      "key": "referral_source",
+      "type": "select",
+      "label": "How did you hear about us?",
+      "max_len": 32,
+      "options": [
+        {
+          "value": "google",
+          "label": "Google"
+        },
+        {
+          "value": "facebook",
+          "label": "Facebook"
+        },
+        {
+          "value": "instagram",
+          "label": "Instagram"
+        },
+        {
+          "value": "neighbour_friend",
+          "label": "Neighbour or friend"
+        },
+        {
+          "value": "sign",
+          "label": "Lawn sign / truck"
+        },
+        {
+          "value": "repeat",
+          "label": "Returning customer"
+        },
+        {
+          "value": "other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "referral_details",
+      "type": "text",
+      "label": "Referral details",
+      "max_len": 500
+    },
+    {
+      "key": "message",
+      "type": "textarea",
+      "label": "Anything else we should know?",
+      "max_len": 2000,
+      "maps_to": "property_notes.body"
+    }
+  ],
+  "limits": {
+    "max_address_formatted": 300,
+    "max_address_line": 200,
+    "max_address_part": 100,
+    "max_custom_text_len": 500,
+    "max_custom_textarea_len": 2000,
+    "max_extra_key_len": 64,
+    "max_extra_keys": 10,
+    "max_extra_val_len": 1024,
+    "token_max_age_seconds": 86400,
+    "token_min_age_seconds": 3
+  }
+}
