@@ -25,24 +25,46 @@ export const LEAD_FIELDS = {
     maxLen: 32,
     mapsTo: 'property.driveway_surface',
     values: ['paved', 'gravel', 'grass', 'unpaved_other', 'none'],
+    optionLabels: {
+      paved: 'Paved — asphalt, concrete, or interlock',
+      gravel: 'Gravel',
+      grass: 'Grass',
+      unpaved_other: 'Other unpaved',
+      none: 'No driveway (walkways only)',
+    },
   },
   service_type: {
     type: 'select',
     label: 'Service type',
     maxLen: 32,
     values: ['residential', 'commercial'],
+    optionLabels: { residential: 'Residential', commercial: 'Commercial' },
   },
   urgency: {
     type: 'select',
     label: 'When do you need service?',
     maxLen: 32,
     values: ['seasonal', 'on_demand', 'emergency'],
+    optionLabels: {
+      seasonal: 'Seasonal contract',
+      on_demand: 'As needed',
+      emergency: 'As soon as possible',
+    },
   },
   referral_source: {
     type: 'select',
     label: 'How did you hear about us?',
     maxLen: 32,
     values: ['google', 'facebook', 'instagram', 'neighbour_friend', 'sign', 'repeat', 'other'],
+    optionLabels: {
+      google: 'Google',
+      facebook: 'Facebook',
+      instagram: 'Instagram',
+      neighbour_friend: 'Neighbour or friend',
+      sign: 'Lawn sign / truck',
+      repeat: 'Returning customer',
+      other: 'Other',
+    },
   },
   referral_details: { type: 'text', label: 'Referral details', maxLen: 500 },
   message: {
@@ -59,8 +81,39 @@ export const LEAD_FIELDS = {
     maxLen: number;
     mapsTo?: string;
     values?: readonly string[];
+    /** Canonical display labels for enum values, for consumers with hardcoded markup. */
+    optionLabels?: Readonly<Record<string, string>>;
   }
 >;
+
+/**
+ * Numeric limits of the lead contract, mirrored from the server constants
+ * (`internal/sdkforms` catalog.go + token.go) and pinned by the contract
+ * test. All *_Bytes caps count BYTES of the UTF-8 encoding — the server
+ * measures with Go `len()` — not JS string length.
+ */
+export const LEAD_LIMITS = {
+  /** address.line1 / address.line2 cap (the "line1-LONG" gotcha). */
+  addressLineBytes: 200,
+  /** Other address parts (city, region, postal, country). */
+  addressPartBytes: 100,
+  /** The single-string form of the composite address. */
+  addressFormattedBytes: 300,
+  /** Tenant custom text field cap. */
+  customTextBytes: 500,
+  /** Tenant custom textarea cap. */
+  customTextareaBytes: 2000,
+  /** Max keys in the `extra` escape hatch. */
+  extraMaxKeys: 10,
+  /** Max bytes of an `extra` key name. */
+  extraKeyMaxBytes: 64,
+  /** Max bytes of an `extra` value, JSON-encoded. */
+  extraValueMaxBytes: 1024,
+  /** A form token younger than this is rejected as bot-shaped (422 "token: form token too young"). */
+  tokenMinAgeSeconds: 3,
+  /** A form token older than this is rejected as stale (422 "token: form token expired"). */
+  tokenMaxAgeSeconds: 86400,
+} as const;
 
 /** A canonical catalog field key. An invalid key is a compile error. */
 export type LeadFieldKey = keyof typeof LEAD_FIELDS;

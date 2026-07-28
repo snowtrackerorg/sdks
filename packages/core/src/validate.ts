@@ -1,21 +1,31 @@
-import { LEAD_FIELDS, type LeadAddressParts, type LeadFieldValues } from './catalog.js';
+import {
+  LEAD_FIELDS,
+  LEAD_LIMITS,
+  type LeadAddressParts,
+  type LeadFieldValues,
+} from './catalog.js';
 import type { FormField, FormSchema } from './types.js';
 
 /** Per-field validation messages, keyed by field key (`address.line1` for address parts). */
 export type LeadFieldErrors = Record<string, string>;
 
-// Address caps, mirroring the server (the "line1-LONG" gotcha: line1 is
-// capped tighter than the composite formatted string).
-const MAX_ADDRESS_FORMATTED = 300;
-const MAX_ADDRESS_LINE = 200;
-const MAX_ADDRESS_PART = 100;
 const ADDRESS_PART_KEYS = ['line1', 'line2', 'city', 'region', 'postal', 'country'];
+
+const encoder = new TextEncoder();
+
+// The server measures every cap with Go len() — BYTES of the UTF-8
+// encoding. "Jean-François Côté" is 18 chars but 21 bytes; counting
+// UTF-16 units here would pass values the server 422s.
+function byteLength(s: string): number {
+  return encoder.encode(s).length;
+}
 
 /**
  * Client-side pre-validation mirroring the server's default-deny rules
  * (POST /v1/sdk/leads): unknown keys, enum membership, per-field length
- * caps, required fields per the schema, and the server invariants that
- * hold regardless of tenant config — name, email-or-phone, address.
+ * caps (in bytes, as the server counts), required fields per the schema,
+ * and the server invariants that hold regardless of tenant config —
+ * name, email-or-phone, address.
  *
  * Unlike the server (which reports the first violation), all errors are
  * collected. An empty result means the submission passes client-side.
@@ -46,7 +56,7 @@ export function validateLead(
       continue;
     }
     const val = raw.trim();
-    if (val.length > spec.maxLen) {
+    if (byteLength(val) > spec.maxLen) {
       errors[key] = `must be at most ${spec.maxLen} characters`;
       continue;
     }
@@ -93,15 +103,56 @@ export function validateLead(
 }
 
 /**
- * Resolve the validation spec for a key: catalog keys are always accepted
- * (code outranks config — a pinned form must not break when a tenant unticks
- * a box); other keys (tenant `custom:…` fields, hook-added extra fields) are
- * accepted only when the schema defines them.
+ * Mirror of the server's `extra` escape-hatch caps: at most
+ * `LEAD_LIMITS.extraMaxKeys` keys, key names ≤ `extraKeyMaxBytes` bytes,
+ * each JSON-encoded value ≤ `extraValueMaxBytes` bytes. Returns errors
+ * keyed `extra` / `extra.<key>` (empty when valid). Pure function.
+ *
+ * (The server JSON-encodes with Go's HTML escaping, which expands `<`,
+ * `>`, `&` to \u-sequences — a value within a few bytes of the cap that
+ * contains those characters may still 422 server-side.)
+ */
+export function validateExtra(extra: Record<string, unknown>): LeadFieldErrors {
+  const errors: LeadFieldErrors = {};
+  const keys = Object.keys(extra);
+  if (keys.length > LEAD_LIMITS.extraMaxKeys) {
+    errors.extra = `at most ${LEAD_LIMITS.extraMaxKeys} keys`;
+    return errors;
+  }
+  for (const k of keys) {
+    const keyBytes = byteLength(k);
+    if (keyBytes === 0 || keyBytes > LEAD_LIMITS.extraKeyMaxBytes) {
+      errors[`extra.${k}`] = `key must be 1–${LEAD_LIMITS.extraKeyMaxBytes} characters`;
+      continue;
+    }
+    let encoded: string;
+    try {
+      encoded = JSON.stringify(extra[k]) ?? 'null';
+    } catch {
+      errors[`extra.${k}`] = `value must encode to at most ${LEAD_LIMITS.extraValueMaxBytes} bytes`;
+      continue;
+    }
+    if (byteLength(encoded) > LEAD_LIMITS.extraValueMaxBytes) {
+      errors[`extra.${k}`] = `value must encode to at most ${LEAD_LIMITS.extraValueMaxBytes} bytes`;
+    }
+  }
+  return errors;
+}
+
+/**
+ * Resolve the validation spec for a key. The fetched schema wins whenever
+ * it defines the key — its spec comes from the server's current catalog,
+ * so an appended enum option (catalog v2) validates even on an older SDK.
+ * `LEAD_FIELDS` is the fallback for catalog keys the schema omits (code
+ * outranks config — a pinned form must not break when a tenant unticks a
+ * box). Keys in neither place are unknown.
  */
 function specFor(
   key: string,
   schemaByKey: Map<string, FormField>,
 ): Pick<FormField, 'type' | 'maxLen' | 'options'> | undefined {
+  const fromSchema = schemaByKey.get(key);
+  if (fromSchema) return fromSchema;
   if (key in LEAD_FIELDS) {
     const spec = LEAD_FIELDS[key as keyof typeof LEAD_FIELDS];
     const values = 'values' in spec ? spec.values : undefined;
@@ -111,13 +162,13 @@ function specFor(
       options: values?.map((v) => ({ value: v, label: v })),
     };
   }
-  return schemaByKey.get(key);
+  return undefined;
 }
 
 function validateAddress(raw: unknown, errors: LeadFieldErrors): void {
   if (typeof raw === 'string') {
-    if (raw.trim().length > MAX_ADDRESS_FORMATTED) {
-      errors.address = `must be at most ${MAX_ADDRESS_FORMATTED} characters`;
+    if (byteLength(raw.trim()) > LEAD_LIMITS.addressFormattedBytes) {
+      errors.address = `must be at most ${LEAD_LIMITS.addressFormattedBytes} characters`;
     }
     return;
   }
@@ -131,8 +182,11 @@ function validateAddress(raw: unknown, errors: LeadFieldErrors): void {
         errors[`address.${part}`] = 'must be a string';
         continue;
       }
-      const max = part === 'line1' || part === 'line2' ? MAX_ADDRESS_LINE : MAX_ADDRESS_PART;
-      if (value.trim().length > max) {
+      const max =
+        part === 'line1' || part === 'line2'
+          ? LEAD_LIMITS.addressLineBytes
+          : LEAD_LIMITS.addressPartBytes;
+      if (byteLength(value.trim()) > max) {
         errors[`address.${part}`] = `must be at most ${max} characters`;
       }
     }
@@ -161,11 +215,12 @@ function addressFormatted(v: string | LeadAddressParts | undefined): string {
 }
 
 // Mirror of the server's shape check: one "@" with something on both sides,
-// a dot in the domain, no whitespace. Deliverability is not the client's
-// problem; garbage rejection is.
+// a dot in the domain, none of space/tab/newline (exactly the server's
+// character set — not \s, which is wider). Deliverability is not the
+// client's problem; garbage rejection is.
 function looksLikeEmail(s: string): boolean {
   const at = s.indexOf('@');
   if (at <= 0 || at === s.length - 1) return false;
-  if (/\s/.test(s)) return false;
+  if (/[ \t\n]/.test(s)) return false;
   return s.slice(at + 1).includes('.');
 }

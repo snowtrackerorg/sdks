@@ -1,3 +1,19 @@
+/**
+ * Stable error codes. The union is open (`string`) so a future server
+ * status maps without a breaking change, but known codes narrow and
+ * autocomplete.
+ */
+export type SnowTrackerErrorCode =
+  | 'config_error'
+  | 'unauthorized'
+  | 'forbidden'
+  | 'not_found'
+  | 'validation_error'
+  | 'rate_limited'
+  | 'network_error'
+  | 'http_error'
+  | (string & Record<never, never>);
+
 export interface SnowTrackerErrorOptions {
   /** Seconds to wait before retrying (from the 429 Retry-After header). */
   retryAfter?: number;
@@ -7,7 +23,7 @@ export interface SnowTrackerErrorOptions {
 
 /** Error thrown for every SnowTracker SDK failure. `status` is 0 for network errors. */
 export class SnowTrackerError extends Error {
-  readonly code: string;
+  readonly code: SnowTrackerErrorCode;
   readonly status: number;
   /** Set on `rate_limited` (429) errors when the server sent Retry-After. */
   readonly retryAfter?: number;
@@ -16,7 +32,7 @@ export class SnowTrackerError extends Error {
 
   constructor(
     message: string,
-    code: string,
+    code: SnowTrackerErrorCode,
     status: number,
     options: SnowTrackerErrorOptions = {},
   ) {

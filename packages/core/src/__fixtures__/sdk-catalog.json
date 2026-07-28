@@ -143,5 +143,17 @@
       "max_len": 2000,
       "maps_to": "property_notes.body"
     }
-  ]
+  ],
+  "limits": {
+    "max_address_formatted": 300,
+    "max_address_line": 200,
+    "max_address_part": 100,
+    "max_custom_text_len": 500,
+    "max_custom_textarea_len": 2000,
+    "max_extra_key_len": 64,
+    "max_extra_keys": 10,
+    "max_extra_val_len": 1024,
+    "token_max_age_seconds": 86400,
+    "token_min_age_seconds": 3
+  }
 }

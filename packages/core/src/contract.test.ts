@@ -6,16 +6,29 @@
 //
 //   sdk-openapi.json — the /sdk/forms + /sdk/leads OpenAPI subset:
 //     curl -s localhost:8080/openapi.json \
-//       | node scripts/extract-sdk-openapi.mjs > src/__fixtures__/sdk-openapi.json
+//       | node scripts/extract-sdk-openapi.mjs \
+//       | pnpm exec prettier --parser json > src/__fixtures__/sdk-openapi.json
 //
-//   sdk-catalog.json — the canonical field catalog, dumped from the server
-//     source of truth (snowtracker-ops-api). From the ops-api repo root, put
-//     a tiny main in tmp_catalogdump/main.go that prints
-//     {"catalog_version": sdkforms.CatalogVersion, "fields": sdkforms.Catalog()}
-//     as JSON, then: go run ./tmp_catalogdump > .../src/__fixtures__/sdk-catalog.json
+//   sdk-catalog.json — the canonical field catalog + numeric limits, dumped
+//     from the server source of truth (snowtracker-ops-api). From the ops-api
+//     repo root, put a tiny main in tmp_catalogdump/main.go printing JSON:
+//       {"catalog_version": sdkforms.CatalogVersion,
+//        "fields": sdkforms.Catalog(),
+//        "limits": {"max_address_line": sdkforms.MaxAddressLine,
+//                   "max_address_part": sdkforms.MaxAddressPart,
+//                   "max_address_formatted": sdkforms.MaxAddressFormatted,
+//                   "max_custom_text_len": sdkforms.MaxCustomTextLen,
+//                   "max_custom_textarea_len": sdkforms.MaxCustomTextareaLen,
+//                   "max_extra_keys": sdkforms.MaxExtraKeys,
+//                   "max_extra_key_len": sdkforms.MaxExtraKeyLen,
+//                   "max_extra_val_len": sdkforms.MaxExtraValLen,
+//                   "token_min_age_seconds": int(sdkforms.TokenMinAge / time.Second),
+//                   "token_max_age_seconds": int(sdkforms.TokenMaxAge / time.Second)}}
+//     then: go run ./tmp_catalogdump | pnpm exec prettier --parser json \
+//       > .../src/__fixtures__/sdk-catalog.json
 import { describe, expect, it } from 'vitest';
 
-import { LEAD_CATALOG_VERSION, LEAD_FIELDS } from './catalog.js';
+import { LEAD_CATALOG_VERSION, LEAD_FIELDS, LEAD_LIMITS } from './catalog.js';
 import catalogFixtureJson from './__fixtures__/sdk-catalog.json';
 import openapiFixture from './__fixtures__/sdk-openapi.json';
 
@@ -31,6 +44,7 @@ interface CatalogFixtureField {
 const catalogFixture = catalogFixtureJson as {
   catalog_version: number;
   fields: CatalogFixtureField[];
+  limits: Record<string, number>;
 };
 
 describe('LEAD_FIELDS mirrors the server catalog', () => {
@@ -50,6 +64,26 @@ describe('LEAD_FIELDS mirrors the server catalog', () => {
     expect('mapsTo' in mirror ? mirror.mapsTo : undefined).toBe(server.maps_to);
     const mirrorValues = 'values' in mirror ? [...mirror.values] : undefined;
     expect(mirrorValues).toEqual(server.options?.map((o) => o.value));
+    const mirrorLabels =
+      'optionLabels' in mirror && mirrorValues
+        ? mirrorValues.map((v) => mirror.optionLabels[v as keyof typeof mirror.optionLabels])
+        : undefined;
+    expect(mirrorLabels).toEqual(server.options?.map((o) => o.label));
+  });
+
+  it('mirrors the numeric limits the client hardcodes', () => {
+    expect({
+      max_address_line: LEAD_LIMITS.addressLineBytes,
+      max_address_part: LEAD_LIMITS.addressPartBytes,
+      max_address_formatted: LEAD_LIMITS.addressFormattedBytes,
+      max_custom_text_len: LEAD_LIMITS.customTextBytes,
+      max_custom_textarea_len: LEAD_LIMITS.customTextareaBytes,
+      max_extra_keys: LEAD_LIMITS.extraMaxKeys,
+      max_extra_key_len: LEAD_LIMITS.extraKeyMaxBytes,
+      max_extra_val_len: LEAD_LIMITS.extraValueMaxBytes,
+      token_min_age_seconds: LEAD_LIMITS.tokenMinAgeSeconds,
+      token_max_age_seconds: LEAD_LIMITS.tokenMaxAgeSeconds,
+    }).toEqual(catalogFixture.limits);
   });
 });
 

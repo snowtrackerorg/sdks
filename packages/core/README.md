@@ -53,9 +53,15 @@ if (Object.keys(errors).length === 0) {
 
 `LEAD_FIELDS` is the typed catalog of canonical field keys (name, email, phone, address,
 driveway_surface, service_type, urgency, referral_source, referral_details, message) with
-their types, enum values, and length caps. The catalog is append-only — shipped fields are
-never removed, renamed, or retyped — and is pinned against the server by a contract test.
-Keys are checked at compile time: `fields: { adress: … }` will not build.
+their types, enum values (+ canonical `optionLabels`), and length caps. The catalog is
+append-only — shipped fields are never removed, renamed, or retyped — and is pinned
+against the server by a contract test. Keys are checked at compile time:
+`fields: { adress: … }` will not build.
+
+`LEAD_LIMITS` carries the numeric caps of the contract (address parts, custom fields,
+the `extra` escape hatch, token age window). All length caps count **bytes** of the
+UTF-8 encoding, exactly as the server does — `validateLead` and `validateExtra` (the
+client-side mirror of the `extra` caps) measure the same way.
 
 ## Authentication
 

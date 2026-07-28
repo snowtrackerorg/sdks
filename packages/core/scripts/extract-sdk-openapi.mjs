@@ -3,7 +3,8 @@
 // Regenerate the committed fixture against a running local ops-api with:
 //
 //   curl -s localhost:8080/openapi.json \
-//     | node scripts/extract-sdk-openapi.mjs > src/__fixtures__/sdk-openapi.json
+//     | node scripts/extract-sdk-openapi.mjs \
+//     | pnpm exec prettier --parser json > src/__fixtures__/sdk-openapi.json
 //
 // See src/contract.test.ts for how the fixture pins the SDK contract.
 import { text } from 'node:stream/consumers';

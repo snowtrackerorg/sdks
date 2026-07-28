@@ -1,7 +1,7 @@
 export { createClient } from './client.js';
 export { SnowTrackerError } from './errors.js';
-export type { SnowTrackerErrorOptions } from './errors.js';
-export { LEAD_CATALOG_VERSION, LEAD_FIELDS } from './catalog.js';
+export type { SnowTrackerErrorCode, SnowTrackerErrorOptions } from './errors.js';
+export { LEAD_CATALOG_VERSION, LEAD_FIELDS, LEAD_LIMITS } from './catalog.js';
 export type {
   CustomFieldKey,
   DrivewaySurface,
@@ -14,7 +14,7 @@ export type {
   ServiceType,
   Urgency,
 } from './catalog.js';
-export { validateLead } from './validate.js';
+export { validateExtra, validateLead } from './validate.js';
 export type { LeadFieldErrors } from './validate.js';
 export type {
   ClientOptions,
