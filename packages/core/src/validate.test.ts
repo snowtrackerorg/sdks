@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import type { FormSchema } from './types.js';
-import { validateExtra, validateLead } from './validate.js';
+import { validateExtra, validateLead, type ValidatableSchema } from './validate.js';
 
 // A representative merged schema: seeded quote-form fields plus one tenant
 // custom select, as GET /v1/sdk/forms returns them.
-const schema: Pick<FormSchema, 'fields'> = {
+const schema: ValidatableSchema = {
+  kind: 'quote',
   fields: [
     { key: 'name', type: 'text', label: 'Full name', required: true, maxLen: 200 },
     { key: 'email', type: 'email', label: 'Email', required: true, maxLen: 254 },
@@ -37,6 +38,19 @@ const schema: Pick<FormSchema, 'fields'> = {
   ],
 };
 
+// The seeded contact form as the server serves it: same identity fields,
+// but address is present with required:false (the per-kind invariant).
+const contactSchema: ValidatableSchema = {
+  kind: 'contact',
+  fields: [
+    { key: 'name', type: 'text', label: 'Full name', required: true, maxLen: 200 },
+    { key: 'email', type: 'email', label: 'Email', required: true, maxLen: 254 },
+    { key: 'phone', type: 'phone', label: 'Phone', required: true, maxLen: 30 },
+    { key: 'address', type: 'text', label: 'Address', required: false, maxLen: 300 },
+    { key: 'message', type: 'textarea', label: 'Message', required: false, maxLen: 2000 },
+  ],
+};
+
 const valid = {
   name: 'Jane Doe',
   email: 'jane@example.com',
@@ -65,9 +79,57 @@ describe('validateLead', () => {
 
   it('enforces the name and address invariants even when the schema omits them', () => {
     const bare: Pick<FormSchema, 'fields'> = { fields: [] };
+    // No `kind` on the schema — treated as quote (the server's default kind
+    // and the stricter side), so the address invariant still applies.
     expect(validateLead(bare, { email: 'jane@example.com' })).toEqual({
       name: 'required',
       address: 'required',
+    });
+  });
+
+  it('requires an address on quote schemas (per-kind invariant)', () => {
+    const noAddress = { name: valid.name, email: valid.email, phone: valid.phone };
+    expect(validateLead(schema, noAddress)).toEqual({ address: 'required' });
+  });
+
+  it('accepts a contact submission without an address', () => {
+    const noAddress = { name: valid.name, email: valid.email, phone: valid.phone };
+    expect(validateLead(contactSchema, noAddress)).toEqual({});
+  });
+
+  it('still validates a provided address on contact schemas (format and caps)', () => {
+    // Over-cap part.
+    expect(validateLead(contactSchema, { ...valid, address: { line1: 'x'.repeat(201) } })).toEqual({
+      'address.line1': 'must be at most 200 characters',
+    });
+    // Unknown part.
+    const withSuite = { ...valid, address: { line1: '1 Main St', suite: '4B' } };
+    expect(validateLead(contactSchema, withSuite as never)).toEqual({
+      'address.suite': 'unknown field',
+    });
+    // Over-cap single string.
+    expect(validateLead(contactSchema, { ...valid, address: 'x'.repeat(301) })).toEqual({
+      address: 'must be at most 300 characters',
+    });
+    // Wrong shape.
+    expect(validateLead(contactSchema, { ...valid, address: 42 as never })).toEqual({
+      address: 'must be a string or an object of parts',
+    });
+    // A well-formed address still passes.
+    expect(validateLead(contactSchema, valid)).toEqual({});
+  });
+
+  it('treats an all-blank parts address as missing: fine on contact, required on quote', () => {
+    expect(validateLead(contactSchema, { ...valid, address: { line1: ' ' } })).toEqual({});
+    expect(validateLead(schema, { ...valid, address: { line1: ' ' } })).toEqual({
+      address: 'required',
+    });
+  });
+
+  it('keeps name and email-or-phone required on contact schemas', () => {
+    expect(validateLead(contactSchema, { ...valid, name: ' ' })).toEqual({ name: 'required' });
+    expect(validateLead(contactSchema, { ...valid, email: '', phone: '' })).toEqual({
+      email: 'email or phone is required',
     });
   });
 
@@ -136,12 +198,6 @@ describe('validateLead', () => {
   it('caps the single-string address at 300 characters', () => {
     expect(validateLead(schema, { ...valid, address: 'x'.repeat(301) })).toEqual({
       address: 'must be at most 300 characters',
-    });
-  });
-
-  it('treats an all-blank parts address as missing', () => {
-    expect(validateLead(schema, { ...valid, address: { line1: ' ' } })).toEqual({
-      address: 'required',
     });
   });
 

@@ -121,12 +121,18 @@ The server requires on **every** lead, regardless of tenant configuration or ove
 
 - `name`
 - `email` **or** `phone` (one of them)
-- `address` — **yes, on contact forms too.** Every submission lands as a CRM prospect
-  property, so an address is mandatory even when the form is a plain contact form.
 
-Hiding any of these with `overrides.hideFields` without setting the value
-programmatically (`setValue('address', …)`) guarantees failed submissions; the hook
-logs a dev-time `console.warn` when it sees that combination.
+The `address` invariant is **per form kind**: contact forms don't require an address;
+quote forms do. A quote submission lands as a CRM prospect property, so `address` is
+mandatory on `kind: 'quote'` forms. On `kind: 'contact'` forms it is optional — when a
+value is provided it is still validated for shape and length, but leaving it out (or
+hiding the field) is fine.
+
+Hiding `name`, both `email` and `phone`, or — on a quote form — `address` with
+`overrides.hideFields` without setting the value programmatically
+(`setValue('address', …)`) guarantees failed submissions; the hook logs a dev-time
+`console.warn` when it sees those combinations (the `address` warning fires only for
+quote-kind schemas).
 
 ## CAPTCHA
 
