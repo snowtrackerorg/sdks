@@ -1,6 +1,6 @@
 {
   "name": "@snowtrackerpro/sdk-forms-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Headless React hook for SnowTracker.pro quote & contact forms — your markup, our schema and submission.",
   "license": "MIT",
   "type": "module",
