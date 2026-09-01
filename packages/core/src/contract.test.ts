@@ -39,6 +39,7 @@ interface CatalogFixtureField {
   max_len: number;
   maps_to?: string;
   options?: { value: string; label: string }[];
+  options_from?: string;
 }
 
 const catalogFixture = catalogFixtureJson as {
@@ -69,6 +70,16 @@ describe('LEAD_FIELDS mirrors the server catalog', () => {
         ? mirrorValues.map((v) => mirror.optionLabels[v as keyof typeof mirror.optionLabels])
         : undefined;
     expect(mirrorLabels).toEqual(server.options?.map((o) => o.label));
+    expect('optionsFrom' in mirror ? mirror.optionsFrom : undefined).toBe(server.options_from);
+  });
+
+  it('dynamic selects carry no hardcoded values — they render from the served schema', () => {
+    for (const server of catalogFixture.fields.filter((f) => f.options_from)) {
+      const mirror = LEAD_FIELDS[server.key as keyof typeof LEAD_FIELDS];
+      expect(mirror.type).toBe('select');
+      expect('values' in mirror).toBe(false);
+      expect(server.options).toBeUndefined();
+    }
   });
 
   it('mirrors the numeric limits the client hardcodes', () => {

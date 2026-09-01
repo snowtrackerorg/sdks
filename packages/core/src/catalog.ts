@@ -11,7 +11,7 @@
 /** The only five field types the contract admits. */
 export type LeadFieldType = 'text' | 'email' | 'phone' | 'textarea' | 'select';
 
-export const LEAD_CATALOG_VERSION = 1;
+export const LEAD_CATALOG_VERSION = 2;
 
 export const LEAD_FIELDS = {
   name: { type: 'text', label: 'Full name', maxLen: 200, mapsTo: 'customer.name' },
@@ -73,6 +73,28 @@ export const LEAD_FIELDS = {
     maxLen: 2000,
     mapsTo: 'property_notes.body',
   },
+  /**
+   * v2 — DYNAMIC selects. Their options are the tenant's own configuration
+   * (driveway-type price list, named size tiers) and arrive only in the
+   * served form schema (`options` on the field); the value is the tenant
+   * row's id and lands straight on the converted property. A tenant with
+   * nothing configured does not get the field at all, so always render
+   * these from the schema — never from a hardcoded list.
+   */
+  driveway_type: {
+    type: 'select',
+    label: 'Driveway type',
+    maxLen: 64,
+    mapsTo: 'property.driveway_type_id',
+    optionsFrom: 'tenant.driveway_types',
+  },
+  driveway_size: {
+    type: 'select',
+    label: 'Driveway size',
+    maxLen: 64,
+    mapsTo: 'property.snow_size_tier_id',
+    optionsFrom: 'tenant.size_tiers',
+  },
 } as const satisfies Record<
   string,
   {
@@ -83,6 +105,8 @@ export const LEAD_FIELDS = {
     values?: readonly string[];
     /** Canonical display labels for enum values, for consumers with hardcoded markup. */
     optionLabels?: Readonly<Record<string, string>>;
+    /** Set on dynamic selects: where the served schema's options come from. */
+    optionsFrom?: string;
   }
 >;
 
