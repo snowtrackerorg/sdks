@@ -154,7 +154,10 @@ export function validateExtra(extra: Record<string, unknown>): LeadFieldErrors {
  * so an appended enum option (catalog v2) validates even on an older SDK.
  * `LEAD_FIELDS` is the fallback for catalog keys the schema omits (code
  * outranks config — a pinned form must not break when a tenant unticks a
- * box). Keys in neither place are unknown.
+ * box). Keys in neither place are unknown. A dynamic select (driveway_type,
+ * driveway_size) has no catalog values: when the schema omits it, the
+ * tenant has nothing to pick from and any answer fails — the server
+ * rejects the same way.
  */
 function specFor(
   key: string,

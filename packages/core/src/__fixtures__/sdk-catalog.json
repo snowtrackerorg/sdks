@@ -1,5 +1,5 @@
 {
-  "catalog_version": 1,
+  "catalog_version": 2,
   "fields": [
     {
       "key": "name",
@@ -35,26 +35,11 @@
       "label": "Driveway surface",
       "max_len": 32,
       "options": [
-        {
-          "value": "paved",
-          "label": "Paved — asphalt, concrete, or interlock"
-        },
-        {
-          "value": "gravel",
-          "label": "Gravel"
-        },
-        {
-          "value": "grass",
-          "label": "Grass"
-        },
-        {
-          "value": "unpaved_other",
-          "label": "Other unpaved"
-        },
-        {
-          "value": "none",
-          "label": "No driveway (walkways only)"
-        }
+        { "value": "paved", "label": "Paved — asphalt, concrete, or interlock" },
+        { "value": "gravel", "label": "Gravel" },
+        { "value": "grass", "label": "Grass" },
+        { "value": "unpaved_other", "label": "Other unpaved" },
+        { "value": "none", "label": "No driveway (walkways only)" }
       ],
       "maps_to": "property.driveway_surface"
     },
@@ -64,14 +49,8 @@
       "label": "Service type",
       "max_len": 32,
       "options": [
-        {
-          "value": "residential",
-          "label": "Residential"
-        },
-        {
-          "value": "commercial",
-          "label": "Commercial"
-        }
+        { "value": "residential", "label": "Residential" },
+        { "value": "commercial", "label": "Commercial" }
       ]
     },
     {
@@ -80,18 +59,9 @@
       "label": "When do you need service?",
       "max_len": 32,
       "options": [
-        {
-          "value": "seasonal",
-          "label": "Seasonal contract"
-        },
-        {
-          "value": "on_demand",
-          "label": "As needed"
-        },
-        {
-          "value": "emergency",
-          "label": "As soon as possible"
-        }
+        { "value": "seasonal", "label": "Seasonal contract" },
+        { "value": "on_demand", "label": "As needed" },
+        { "value": "emergency", "label": "As soon as possible" }
       ]
     },
     {
@@ -100,48 +70,38 @@
       "label": "How did you hear about us?",
       "max_len": 32,
       "options": [
-        {
-          "value": "google",
-          "label": "Google"
-        },
-        {
-          "value": "facebook",
-          "label": "Facebook"
-        },
-        {
-          "value": "instagram",
-          "label": "Instagram"
-        },
-        {
-          "value": "neighbour_friend",
-          "label": "Neighbour or friend"
-        },
-        {
-          "value": "sign",
-          "label": "Lawn sign / truck"
-        },
-        {
-          "value": "repeat",
-          "label": "Returning customer"
-        },
-        {
-          "value": "other",
-          "label": "Other"
-        }
+        { "value": "google", "label": "Google" },
+        { "value": "facebook", "label": "Facebook" },
+        { "value": "instagram", "label": "Instagram" },
+        { "value": "neighbour_friend", "label": "Neighbour or friend" },
+        { "value": "sign", "label": "Lawn sign / truck" },
+        { "value": "repeat", "label": "Returning customer" },
+        { "value": "other", "label": "Other" }
       ]
     },
-    {
-      "key": "referral_details",
-      "type": "text",
-      "label": "Referral details",
-      "max_len": 500
-    },
+    { "key": "referral_details", "type": "text", "label": "Referral details", "max_len": 500 },
     {
       "key": "message",
       "type": "textarea",
       "label": "Anything else we should know?",
       "max_len": 2000,
       "maps_to": "property_notes.body"
+    },
+    {
+      "key": "driveway_type",
+      "type": "select",
+      "label": "Driveway type",
+      "max_len": 64,
+      "maps_to": "property.driveway_type_id",
+      "options_from": "tenant.driveway_types"
+    },
+    {
+      "key": "driveway_size",
+      "type": "select",
+      "label": "Driveway size",
+      "max_len": 64,
+      "maps_to": "property.snow_size_tier_id",
+      "options_from": "tenant.size_tiers"
     }
   ],
   "limits": {
