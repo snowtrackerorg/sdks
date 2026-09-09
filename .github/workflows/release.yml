@@ -23,6 +23,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1
+        id: changesets
         with:
           publish: pnpm release
           version: pnpm version-packages
@@ -32,3 +33,26 @@ jobs:
           # via npm Trusted Publishing (OIDC, id-token: write above). Each
           # package must have this repo + release.yml registered as a trusted
           # publisher on npmjs.com. Provenance is automatic under OIDC.
+
+      # Feature log. A feature PR's "## Feature log" section posts a shipped
+      # entry on merge; it goes Live when the Version Packages PR merges and
+      # the publish above actually runs (published == true). No section =
+      # nothing posted; the Version Packages PR has none.
+      - name: Post to feature log
+        run: scripts/post-feature-log.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FEATURE_LOG_API_URL: ${{ vars.FEATURE_LOG_API_URL }}
+          FEATURE_LOG_WRITE_TOKEN: ${{ secrets.FEATURE_LOG_WRITE_TOKEN }}
+      - name: Mark SDK release live on the feature log
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          FEATURE_LOG_API_URL: ${{ vars.FEATURE_LOG_API_URL }}
+          FEATURE_LOG_WRITE_TOKEN: ${{ secrets.FEATURE_LOG_WRITE_TOKEN }}
+        run: |
+          [ -n "$FEATURE_LOG_API_URL" ] && [ -n "$FEATURE_LOG_WRITE_TOKEN" ] || { echo "feature-log: not configured — skipping"; exit 0; }
+          payload=$(jq -n --arg sha "$GITHUB_SHA" '{kind:"promoted", repo:"sdks", title:"Published to npm", commit_sha:$sha}')
+          curl -fsS -X POST "$FEATURE_LOG_API_URL/v1/feature-log" \
+            -H "Content-Type: application/json" -H "X-Feature-Log-Token: $FEATURE_LOG_WRITE_TOKEN" \
+            --data "$payload" >/dev/null && echo "feature-log: SDK release marked live" \
+            || echo "::warning::feature-log: could not mark the SDK release live"
