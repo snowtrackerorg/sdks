@@ -11,7 +11,7 @@
 /** The only five field types the contract admits. */
 export type LeadFieldType = 'text' | 'email' | 'phone' | 'textarea' | 'select';
 
-export const LEAD_CATALOG_VERSION = 2;
+export const LEAD_CATALOG_VERSION = 3;
 
 export const LEAD_FIELDS = {
   name: { type: 'text', label: 'Full name', maxLen: 200, mapsTo: 'customer.name' },
@@ -55,13 +55,15 @@ export const LEAD_FIELDS = {
     type: 'select',
     label: 'How did you hear about us?',
     maxLen: 32,
-    values: ['google', 'facebook', 'instagram', 'neighbour_friend', 'sign', 'repeat', 'other'],
+    values: ['google', 'facebook', 'instagram', 'neighbour_friend', 'sign', 'billboard', 'flyer', 'repeat', 'other'],
     optionLabels: {
       google: 'Google',
       facebook: 'Facebook',
       instagram: 'Instagram',
       neighbour_friend: 'Neighbour or friend',
       sign: 'Lawn sign / truck',
+      billboard: 'Billboard',
+      flyer: 'Flyer',
       repeat: 'Returning customer',
       other: 'Other',
     },
