@@ -1,5 +1,5 @@
 {
-  "catalog_version": 2,
+  "catalog_version": 3,
   "fields": [
     {
       "key": "name",
@@ -75,6 +75,8 @@
         { "value": "instagram", "label": "Instagram" },
         { "value": "neighbour_friend", "label": "Neighbour or friend" },
         { "value": "sign", "label": "Lawn sign / truck" },
+        { "value": "billboard", "label": "Billboard" },
+        { "value": "flyer", "label": "Flyer" },
         { "value": "repeat", "label": "Returning customer" },
         { "value": "other", "label": "Other" }
       ]
