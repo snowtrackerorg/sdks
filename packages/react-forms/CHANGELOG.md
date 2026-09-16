@@ -1,5 +1,12 @@
 # @snowtrackerpro/sdk-forms-react
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [8c724f1]
+  - @snowtrackerpro/sdk-core@0.4.0
+
 ## 0.2.1
 
 ### Patch Changes
