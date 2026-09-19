@@ -5,12 +5,13 @@ forms and live vehicle tracking.
 
 ## Packages
 
-| Package                                                     | Description                                                                                    |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [`@snowtrackerpro/sdk-core`](./packages/core)               | Shared client + publishable-key auth: tenant info, form schemas, lead validation + submission. |
-| [`@snowtrackerpro/sdk-forms-react`](./packages/react-forms) | Headless `useSnowtrackerForm()` React hook for quote/contact forms — bring your own markup.    |
+| Package                                                           | Description                                                                                                            |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [`@snowtrackerpro/sdk-core`](./packages/core)                     | Shared client + publishable-key auth: tenant info, form schemas, lead validation + submission.                         |
+| [`@snowtrackerpro/sdk-forms-react`](./packages/react-forms)       | Headless `useSnowtrackerForm()` React hook for quote/contact forms — bring your own markup.                            |
+| [`@snowtrackerpro/sdk-tracking-react`](./packages/react-tracking) | Drop-in `<LiveTracker>` React map of the tractors out right now, filterable by route — bring your own Google Maps key. |
 
-More packages (a framework-free `<snowtracker-form>` widget, a `<script>`-tag embed, live tracking) are coming.
+More packages (a framework-free `<snowtracker-form>` widget, a `<script>`-tag embed) are coming.
 
 ## Authentication
 

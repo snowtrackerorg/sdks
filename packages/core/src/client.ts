@@ -3,10 +3,12 @@ import type {
   ClientOptions,
   FormSchema,
   GetFormSchemaOptions,
+  GetTrackingOptions,
   SnowTrackerClient,
   SubmitLeadOptions,
   SubmitLeadResult,
   TenantInfo,
+  TrackingSnapshot,
 } from './types.js';
 
 const DEFAULT_BASE_URL = 'https://api.snowtracker.pro';
@@ -63,6 +65,24 @@ interface SDKLeadWire {
   status: string;
 }
 
+interface SDKTrackingWire {
+  as_of: string;
+  center: { lat: number; lng: number } | null;
+  routes: { id: string; name: string; color: string }[] | null;
+  tractors:
+    | {
+        id: string;
+        vehicle_name: string;
+        icon: string;
+        route_id: string;
+        lat: number;
+        lng: number;
+        heading_deg: number | null;
+        recorded_at: string;
+      }[]
+    | null;
+}
+
 interface ProblemWire {
   detail?: unknown;
   message?: unknown;
@@ -93,6 +113,22 @@ function fieldErrorsFromProblem(detail: string, errors: unknown): Record<string,
     out[m[1]] = m[2];
   }
   return out;
+}
+
+// Retry-After is either delay-seconds or an HTTP-date. A missing or unreadable
+// header yields undefined — never 0, which a client honouring it would read
+// as "retry immediately".
+function parseRetryAfter(header: string | null | undefined): number | undefined {
+  if (header === null || header === undefined) return undefined;
+  const value = header.trim();
+  if (value === '') return undefined;
+  if (/^\d+$/.test(value)) return Number(value);
+  // Every HTTP-date form opens with a day name; Date.parse alone would also
+  // accept junk like "-5".
+  if (!/^[A-Za-z]{3,9},? /.test(value)) return undefined;
+  const at = Date.parse(value);
+  if (Number.isNaN(at)) return undefined;
+  return Math.max(0, Math.ceil((at - Date.now()) / 1000));
 }
 
 interface RequestOptions {
@@ -138,8 +174,8 @@ export function createClient(opts: ClientOptions): SnowTrackerClient {
       }
       const errOpts: SnowTrackerErrorOptions = {};
       if (res.status === 429) {
-        const retryAfter = Number(res.headers.get('Retry-After'));
-        if (Number.isFinite(retryAfter)) errOpts.retryAfter = retryAfter;
+        const retryAfter = parseRetryAfter(res.headers.get('Retry-After'));
+        if (retryAfter !== undefined) errOpts.retryAfter = retryAfter;
       }
       if (res.status === 422) {
         const fieldErrors = fieldErrorsFromProblem(message, problem.errors);
@@ -208,6 +244,37 @@ export function createClient(opts: ClientOptions): SnowTrackerClient {
         signal: leadOpts.signal,
       });
       return { submissionId: data.submission_id, status: data.status };
+    },
+
+    async getTracking(trackingOpts: GetTrackingOptions = {}): Promise<TrackingSnapshot> {
+      let data: SDKTrackingWire;
+      try {
+        data = await request<SDKTrackingWire>('/v1/sdk/tracking', {
+          signal: trackingOpts.signal,
+        });
+      } catch (err) {
+        // 404 here is a state, not a fault: the business has not switched on
+        // its public live map. Give it its own code so a UI can branch on it.
+        if (err instanceof SnowTrackerError && err.status === 404) {
+          throw new SnowTrackerError(err.message, 'tracking_unavailable', 404);
+        }
+        throw err;
+      }
+      return {
+        asOf: data.as_of,
+        center: data.center ?? null,
+        routes: (data.routes ?? []).map((r) => ({ id: r.id, name: r.name, color: r.color })),
+        tractors: (data.tractors ?? []).map((t) => ({
+          id: t.id,
+          vehicleName: t.vehicle_name,
+          icon: t.icon,
+          routeId: t.route_id,
+          lat: t.lat,
+          lng: t.lng,
+          headingDeg: t.heading_deg ?? null,
+          recordedAt: t.recorded_at,
+        })),
+      };
     },
   };
 }

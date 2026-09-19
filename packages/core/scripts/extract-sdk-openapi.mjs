@@ -1,4 +1,4 @@
-// Extracts the /sdk/forms + /sdk/leads subset (paths + transitively
+// Extracts the /sdk/forms + /sdk/leads + /sdk/tracking subset (paths + transitively
 // referenced component schemas) from a full ops-api OpenAPI document.
 // Regenerate the committed fixture against a running local ops-api with:
 //
@@ -10,7 +10,8 @@
 import { text } from 'node:stream/consumers';
 
 const doc = JSON.parse(await text(process.stdin));
-const wanted = ['/sdk/forms', '/sdk/forms/{form_id}', '/sdk/leads'];
+// Paths are relative to the document's `servers[0].url` (/v1).
+const wanted = ['/sdk/forms', '/sdk/forms/{form_id}', '/sdk/leads', '/sdk/tracking'];
 
 const refs = new Set();
 function collectRefs(node) {

@@ -63,13 +63,35 @@ the `extra` escape hatch, token age window). All length caps count **bytes** of 
 UTF-8 encoding, exactly as the server does — `validateLead` and `validateExtra` (the
 client-side mirror of the `extra` caps) measure the same way.
 
+## Live tracking
+
+`getTracking()` returns the business's public live map: every saved route, and the
+tractors that are out on one right now.
+
+```ts
+const snapshot = await client.getTracking(); // accepts { signal }
+// {
+//   asOf,                       // server time — measure a fix's age against this
+//   center,                     // { lat, lng } | null — where to rest the map
+//   routes:   [{ id, name, color }],
+//   tractors: [{ id, vehicleName, icon, routeId, lat, lng, headingDeg, recordedAt }],
+// }
+```
+
+A tractor carries a **vehicle name only** — there is nothing about the driver in this
+API, by design. When the business has not switched on its public live map the call
+rejects with code `tracking_unavailable` (status 404): treat that as a state to render,
+not a fault. `forbidden` (403) means the key lacks the tracking scope or the page's
+origin is not on the key's allowlist. For a ready-made map, use
+[`@snowtrackerpro/sdk-tracking-react`](../react-tracking).
+
 ## Authentication
 
 Requests are authenticated with a **publishable key** (`pk_live_…` / `pk_test_…`). Publishable keys are safe to ship in browser code: they identify your SnowTracker account and are restricted to the origins you allowlist in the dashboard. Test-mode keys additionally work from `localhost`. Submitting leads requires the key to carry the `quotes:create` scope.
 
 ## Errors
 
-All failures throw `SnowTrackerError` with a stable `code` (`config_error`, `unauthorized`, `forbidden`, `not_found`, `validation_error`, `rate_limited`, `network_error`, `http_error`) and the HTTP `status` (`0` for network failures). `validation_error` (422) carries `fieldErrors` — per-field messages keyed by field key; `rate_limited` (429) carries `retryAfter` in seconds.
+All failures throw `SnowTrackerError` with a stable `code` (`config_error`, `unauthorized`, `forbidden`, `not_found`, `tracking_unavailable`, `validation_error`, `rate_limited`, `network_error`, `http_error`) and the HTTP `status` (`0` for network failures). `validation_error` (422) carries `fieldErrors` — per-field messages keyed by field key; `rate_limited` (429) carries `retryAfter` in seconds — `undefined` when the server sent no readable `Retry-After`, so fall back to your own backoff rather than retrying at once.
 
 ## License
 

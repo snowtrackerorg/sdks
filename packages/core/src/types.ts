@@ -96,6 +96,43 @@ export interface SubmitLeadResult {
   status: string;
 }
 
+/** A saved route, as offered in a live-map filter. */
+export interface TrackingRoute {
+  id: string;
+  name: string;
+  /** CSS colour of the route (hex). */
+  color: string;
+}
+
+/** One tractor that is out on a route right now. Carries a vehicle name only — never a driver. */
+export interface TrackingTractor {
+  id: string;
+  vehicleName: string;
+  /** Vehicle icon preset key (`tractor`, `plow-truck`, …). Treat unknown keys as `tractor`. */
+  icon: string;
+  routeId: string;
+  lat: number;
+  lng: number;
+  /** Compass heading in degrees, or null when the device did not report one. */
+  headingDeg: number | null;
+  /** RFC 3339 time of the position fix. */
+  recordedAt: string;
+}
+
+/** The GET /v1/sdk/tracking response: every saved route and the tractors out on them. */
+export interface TrackingSnapshot {
+  /** RFC 3339 server time of the snapshot. Measure a fix's age against this, not the viewer's clock. */
+  asOf: string;
+  /** Where to rest the map when nobody is out, or null when the business has no location set. */
+  center: { lat: number; lng: number } | null;
+  routes: TrackingRoute[];
+  tractors: TrackingTractor[];
+}
+
+export interface GetTrackingOptions {
+  signal?: AbortSignal;
+}
+
 export interface SnowTrackerClient {
   /** Fetch public display info for the key's tenant (GET /v1/sdk/tenant). */
   getTenant(): Promise<TenantInfo>;
@@ -103,4 +140,11 @@ export interface SnowTrackerClient {
   getFormSchema(opts?: GetFormSchemaOptions): Promise<FormSchema>;
   /** Submit a lead (POST /v1/sdk/leads). */
   submitLead(opts: SubmitLeadOptions): Promise<SubmitLeadResult>;
+  /**
+   * Fetch the public live-map snapshot (GET /v1/sdk/tracking). Rejects with
+   * code `tracking_unavailable` (status 404) when the business has not switched
+   * on its public live map, `forbidden` (403) when the key lacks the tracking
+   * scope or the page's origin is not allowed, and `rate_limited` (429).
+   */
+  getTracking(opts?: GetTrackingOptions): Promise<TrackingSnapshot>;
 }
