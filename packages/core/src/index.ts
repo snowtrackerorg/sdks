@@ -25,8 +25,12 @@ export type {
   FormOption,
   FormSchema,
   GetFormSchemaOptions,
+  GetTrackingOptions,
   SnowTrackerClient,
   SubmitLeadOptions,
   SubmitLeadResult,
   TenantInfo,
+  TrackingRoute,
+  TrackingSnapshot,
+  TrackingTractor,
 } from './types.js';

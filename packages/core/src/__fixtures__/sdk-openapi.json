@@ -164,6 +164,43 @@
         "summary": "Submit a lead from an embedded form (publishable-key auth, quotes:create scope).",
         "tags": ["sdk"]
       }
+    },
+    "/sdk/tracking": {
+      "get": {
+        "operationId": "sdk-get-tracking",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SDKTrackingBody"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "summary": "Public live-map snapshot for embeddable SDKs (publishable-key auth).",
+        "tags": ["sdk"]
+      }
     }
   },
   "components": {
@@ -420,6 +457,114 @@
           }
         },
         "required": ["form_id", "fields", "token"],
+        "type": "object"
+      },
+      "SDKTrackingBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["/v1/SDKTrackingBody.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "as_of": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "center": {
+            "$ref": "#/components/schemas/SDKTrackingCenter"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/SDKTrackingRoute"
+            },
+            "type": ["array", "null"]
+          },
+          "tractors": {
+            "items": {
+              "$ref": "#/components/schemas/SDKTrackingTractor"
+            },
+            "type": ["array", "null"]
+          }
+        },
+        "required": ["as_of", "center", "routes", "tractors"],
+        "type": "object"
+      },
+      "SDKTrackingCenter": {
+        "additionalProperties": false,
+        "properties": {
+          "lat": {
+            "format": "double",
+            "type": "number"
+          },
+          "lng": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": ["lat", "lng"],
+        "type": "object"
+      },
+      "SDKTrackingRoute": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "name", "color"],
+        "type": "object"
+      },
+      "SDKTrackingTractor": {
+        "additionalProperties": false,
+        "properties": {
+          "heading_deg": {
+            "format": "double",
+            "type": ["number", "null"]
+          },
+          "icon": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lat": {
+            "format": "double",
+            "type": "number"
+          },
+          "lng": {
+            "format": "double",
+            "type": "number"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "route_id": {
+            "type": "string"
+          },
+          "vehicle_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "vehicle_name",
+          "icon",
+          "route_id",
+          "lat",
+          "lng",
+          "heading_deg",
+          "recorded_at"
+        ],
         "type": "object"
       }
     }

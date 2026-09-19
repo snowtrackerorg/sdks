@@ -4,7 +4,7 @@
 // Fixtures (regenerate against a running local ops-api after a catalog or
 // endpoint change):
 //
-//   sdk-openapi.json — the /sdk/forms + /sdk/leads OpenAPI subset:
+//   sdk-openapi.json — the /sdk/forms + /sdk/leads + /sdk/tracking OpenAPI subset:
 //     curl -s localhost:8080/openapi.json \
 //       | node scripts/extract-sdk-openapi.mjs \
 //       | pnpm exec prettier --parser json > src/__fixtures__/sdk-openapi.json
@@ -106,6 +106,7 @@ describe('client wire assumptions match the OpenAPI subset', () => {
     expect(openapiFixture.paths['/sdk/forms'].get).toBeDefined();
     expect(openapiFixture.paths['/sdk/forms/{form_id}'].get).toBeDefined();
     expect(openapiFixture.paths['/sdk/leads'].post).toBeDefined();
+    expect(openapiFixture.paths['/sdk/tracking'].get).toBeDefined();
   });
 
   it('GET /sdk/forms takes kind=quote|contact defaulting to quote', () => {
@@ -154,6 +155,43 @@ describe('client wire assumptions match the OpenAPI subset', () => {
       'website',
     ]);
     expect(schemas.SDKLeadBody.required).toEqual(['submission_id', 'status']);
+  });
+
+  it('tracking snapshot has the fields getTracking maps', () => {
+    expect(schemas.SDKTrackingBody.required).toEqual(['as_of', 'center', 'routes', 'tractors']);
+    expect(Object.keys(schemas.SDKTrackingCenter.properties).sort()).toEqual(['lat', 'lng']);
+    expect(Object.keys(schemas.SDKTrackingRoute.properties).sort()).toEqual([
+      'color',
+      'id',
+      'name',
+    ]);
+  });
+
+  // The public live map shows vehicles, never people. A new key on the tractor
+  // object (a driver name, a phone, a shift id) must fail here, loudly, before
+  // it reaches a customer's website.
+  it('a tractor carries EXACTLY the public keys — nothing about the driver', () => {
+    expect(schemas.SDKTrackingTractor.additionalProperties).toBe(false);
+    expect(Object.keys(schemas.SDKTrackingTractor.properties).sort()).toEqual([
+      'heading_deg',
+      'icon',
+      'id',
+      'lat',
+      'lng',
+      'recorded_at',
+      'route_id',
+      'vehicle_name',
+    ]);
+    expect([...schemas.SDKTrackingTractor.required].sort()).toEqual([
+      'heading_deg',
+      'icon',
+      'id',
+      'lat',
+      'lng',
+      'recorded_at',
+      'route_id',
+      'vehicle_name',
+    ]);
   });
 
   it('errors are RFC7807 problems with a detail string and optional errors list', () => {

@@ -8,6 +8,7 @@ export type SnowTrackerErrorCode =
   | 'unauthorized'
   | 'forbidden'
   | 'not_found'
+  | 'tracking_unavailable'
   | 'validation_error'
   | 'rate_limited'
   | 'network_error'
@@ -15,7 +16,7 @@ export type SnowTrackerErrorCode =
   | (string & Record<never, never>);
 
 export interface SnowTrackerErrorOptions {
-  /** Seconds to wait before retrying (from the 429 Retry-After header). */
+  /** Seconds to wait before retrying (from the 429 Retry-After header). Unset when the header is missing or unreadable. */
   retryAfter?: number;
   /** Per-field validation messages parsed from a 422 problem response, keyed by field key. */
   fieldErrors?: Record<string, string>;
