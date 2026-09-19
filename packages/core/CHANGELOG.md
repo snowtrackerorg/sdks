@@ -1,5 +1,11 @@
 # @snowtrackerpro/sdk-core
 
+## 0.4.0
+
+### Minor Changes
+
+- 8c724f1: `referral_source` gains two options, `billboard` ("Billboard") and `flyer` ("Flyer"), mirroring the ops-api catalog. `ReferralSource` widens accordingly.
+
 ## 0.3.0
 
 ### Minor Changes
