@@ -1,6 +1,6 @@
 {
   "name": "@snowtrackerpro/sdk-tracking-react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Drop-in React live map for SnowTracker.pro — show your tractors on your own website, filtered by route.",
   "license": "MIT",
   "type": "module",
