@@ -1,5 +1,15 @@
 # @snowtrackerpro/sdk-forms-react
 
+## 0.2.4
+
+### Patch Changes
+
+- df266dc: The publishable key now decides the environment. A staging key (`pk_live_stg_…` / `pk_test_stg_…`) talks to `https://api.staging.snowtracker.pro`; any other key talks to `https://api.snowtracker.pro`. `baseUrl` becomes an override rather than a requirement. New exports from `@snowtrackerpro/sdk-core`: `resolveBaseUrl(publishableKey, baseUrl?)` and `API_BASE_URLS`.
+- Updated dependencies [e2fe62f]
+- Updated dependencies [df266dc]
+- Updated dependencies [4a23466]
+  - @snowtrackerpro/sdk-core@0.6.0
+
 ## 0.2.3
 
 ### Patch Changes
