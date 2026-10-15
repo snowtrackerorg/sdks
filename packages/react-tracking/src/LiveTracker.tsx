@@ -49,7 +49,10 @@ export interface LiveTrackerProps {
   publishableKey: string;
   /** YOUR Google Maps JavaScript API key. Required — SnowTracker never ships or proxies one. */
   googleMapsApiKey: string;
-  /** API base URL. Defaults to https://api.snowtracker.pro. */
+  /**
+   * Override the API base URL. Normally leave it out — the key decides the
+   * environment (a `pk_…_stg_…` key talks to staging, any other to production).
+   */
   baseUrl?: string;
   /** Your Google Maps Map ID. Defaults to `DEMO_MAP_ID`, which is for testing only. Read once, at mount. */
   mapId?: string;
@@ -81,7 +84,8 @@ const DEFAULT_LABELS: LiveTrackerLabels = {
     'check Settings → Publishable Keys.',
   unauthorized:
     'LiveTracker: the publishable key was not accepted (401). Check that publishableKey is a ' +
-    'current pk_live_… / pk_test_… key and that baseUrl points at the matching environment.',
+    'current pk_live_… / pk_test_… key, and that any baseUrl override points at the environment ' +
+    'the key came from.',
   loadError: 'Live tracking couldn’t load. Trying again…',
   missingGoogleMapsApiKey: 'LiveTracker needs a Google Maps API key — pass googleMapsApiKey',
   missingPublishableKey: 'LiveTracker needs a SnowTracker publishable key — pass publishableKey',

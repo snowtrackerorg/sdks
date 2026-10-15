@@ -57,20 +57,20 @@ the polling start in the browser.
 
 ## Props
 
-| Prop               | Type                         | Default                       | Notes                                                                                                |
-| ------------------ | ---------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `publishableKey`   | `string`                     | — (required)                  | `pk_live_…` / `pk_test_…` from **Settings → Publishable Keys**, with the live tracking scope.        |
-| `googleMapsApiKey` | `string`                     | — (required)                  | Your own Google Maps key. Missing → an inline error box, never a crash.                              |
-| `baseUrl`          | `string`                     | `https://api.snowtracker.pro` | API base URL.                                                                                        |
-| `mapId`            | `string`                     | `'DEMO_MAP_ID'`               | Your Google Maps Map ID. Read once, at mount. **Set your own for production.**                       |
-| `defaultRouteId`   | `string`                     | All tractors                  | Route selected at first render. An id that is not a saved route falls back to All tractors.          |
-| `defaultCenter`    | `{ lat, lng }`               | —                             | Where the map rests when nobody is out and the business has no location set. Read once, at mount.    |
-| `defaultZoom`      | `number`                     | `12`                          | Zoom while the map is resting on a centre. Read once, at mount.                                      |
-| `className`        | `string`                     | —                             | Class for the outer container.                                                                       |
-| `style`            | `CSSProperties`              | —                             | Inline style for the outer container.                                                                |
-| `selectClassName`  | `string`                     | —                             | Class for the native route `<select>`.                                                               |
-| `labels`           | `Partial<LiveTrackerLabels>` | English                       | Override any string the component shows.                                                             |
-| `onUnavailable`    | `() => void`                 | —                             | Called once when the API reports that live tracking is not switched on — hide your own heading, say. |
+| Prop               | Type                         | Default         | Notes                                                                                                |
+| ------------------ | ---------------------------- | --------------- | ---------------------------------------------------------------------------------------------------- |
+| `publishableKey`   | `string`                     | — (required)    | `pk_live_…` / `pk_test_…` from **Settings → Publishable Keys**, with the live tracking scope.        |
+| `googleMapsApiKey` | `string`                     | — (required)    | Your own Google Maps key. Missing → an inline error box, never a crash.                              |
+| `baseUrl`          | `string`                     | from the key    | Override only. The key decides the environment: `pk_…_stg_…` → staging, otherwise production.        |
+| `mapId`            | `string`                     | `'DEMO_MAP_ID'` | Your Google Maps Map ID. Read once, at mount. **Set your own for production.**                       |
+| `defaultRouteId`   | `string`                     | All tractors    | Route selected at first render. An id that is not a saved route falls back to All tractors.          |
+| `defaultCenter`    | `{ lat, lng }`               | —               | Where the map rests when nobody is out and the business has no location set. Read once, at mount.    |
+| `defaultZoom`      | `number`                     | `12`            | Zoom while the map is resting on a centre. Read once, at mount.                                      |
+| `className`        | `string`                     | —               | Class for the outer container.                                                                       |
+| `style`            | `CSSProperties`              | —               | Inline style for the outer container.                                                                |
+| `selectClassName`  | `string`                     | —               | Class for the native route `<select>`.                                                               |
+| `labels`           | `Partial<LiveTrackerLabels>` | English         | Override any string the component shows.                                                             |
+| `onUnavailable`    | `() => void`                 | —               | Called once when the API reports that live tracking is not switched on — hide your own heading, say. |
 
 ### Sizing and styling
 
@@ -121,8 +121,17 @@ console rather than hidden:
 
 - **403** — the publishable key does not have the live tracking scope, or this website's
   origin is not on the key's allowed list. Fix both under **Settings → Publishable Keys**.
-- **401** — the publishable key was not accepted (wrong key, or a `baseUrl` pointing at
-  a different environment).
+- **401** — the publishable key was not accepted (wrong key, or a `baseUrl` override
+  pointing at a different environment from the one the key came from — the API's message
+  names the right host).
+
+## Environments: the key decides
+
+A publishable key knows which SnowTracker environment minted it. A key from staging
+(`pk_live_stg_…` / `pk_test_stg_…`) talks to `https://api.staging.snowtracker.pro`;
+any other key talks to production, `https://api.snowtracker.pro`. You do not need to set
+a base URL — swap the key and the SDK follows. `baseUrl` is an override (for example a
+local API at `http://localhost:8080`), not a requirement.
 
 ## Google Maps key and Map ID
 

@@ -1,9 +1,16 @@
 import type { LeadFieldType, LeadFieldValues } from './catalog.js';
 
 export interface ClientOptions {
-  /** A publishable key (pk_live_… / pk_test_…) from Settings → Publishable Keys. */
+  /**
+   * A publishable key (pk_live_… / pk_test_…) from Settings → Publishable Keys.
+   * The key decides the environment: a staging key (pk_live_stg_… /
+   * pk_test_stg_…) talks to the staging API, any other key to production.
+   */
   publishableKey: string;
-  /** API base URL. Defaults to https://api.snowtracker.pro. */
+  /**
+   * Override the API base URL. Normally leave it out — the key picks
+   * https://api.snowtracker.pro or https://api.staging.snowtracker.pro.
+   */
   baseUrl?: string;
 }
 
