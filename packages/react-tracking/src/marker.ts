@@ -1,7 +1,7 @@
 // What a tractor looks like on the map — the same round badge, vehicle glyph
 // and caption the SnowTracker ops app draws, plus the route's colour as a ring
 // and an arrow for the heading. Pure DOM, no Maps API, no React.
-import { vehicleIconSvg } from './vehicleIcons.js';
+import { BROKE_DOWN_BADGE_SVG, vehicleIconSvg } from './vehicleIcons.js';
 
 export interface MarkerPaint {
   /** The vehicle's name, already suffixed with its age when stale. */
@@ -11,6 +11,8 @@ export interface MarkerPaint {
   ringColor: string | null;
   headingDeg: number | null;
   stale: boolean;
+  /** The driver has the tractor marked broke down: a red wrench on the badge's shoulder. */
+  brokeDown: boolean;
 }
 
 // The marker content is a ZERO-SIZE anchor: AdvancedMarkerElement pins the
@@ -27,13 +29,20 @@ export function createMarkerContent(doc: Document, paint: MarkerPaint): HTMLElem
   badge.className = 'stp-lt-marker__badge';
   const label = doc.createElement('div');
   label.className = 'stp-lt-marker__label';
-  root.append(heading, badge, label);
+  const wrench = doc.createElement('div');
+  wrench.className = 'stp-lt-marker__broke-down';
+  wrench.innerHTML = BROKE_DOWN_BADGE_SVG; // our own constant SVG, never API text
+  wrench.hidden = true;
+  root.append(heading, badge, wrench, label);
   paintMarkerContent(root, paint);
   return root;
 }
 
 export function paintMarkerContent(root: HTMLElement, paint: MarkerPaint): void {
   root.classList.toggle('stp-lt-marker--quiet', paint.stale);
+  root.classList.toggle('stp-lt-marker--broke-down', paint.brokeDown);
+  const wrench = root.querySelector<HTMLElement>('.stp-lt-marker__broke-down');
+  if (wrench) wrench.hidden = !paint.brokeDown;
   // Set through the CSSOM: an unparseable colour is simply ignored, so a bad
   // value from the API can never inject CSS.
   if (paint.ringColor) root.style.setProperty('--stp-lt-ring', paint.ringColor);

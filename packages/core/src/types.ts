@@ -124,7 +124,16 @@ export interface TrackingTractor {
   headingDeg: number | null;
   /** RFC 3339 time of the position fix. */
   recordedAt: string;
+  /**
+   * `broke_down` while the driver has the tractor marked broke down — draw it
+   * with the broke-down icon; `on_route` otherwise. Treat anything else as
+   * `on_route`.
+   */
+  status: TrackingTractorStatus;
 }
+
+/** A tractor's status on the public live map. */
+export type TrackingTractorStatus = 'on_route' | 'broke_down';
 
 /** The GET /v1/sdk/tracking response: every saved route and the tractors out on them. */
 export interface TrackingSnapshot {
