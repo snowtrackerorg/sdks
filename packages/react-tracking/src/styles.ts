@@ -38,6 +38,11 @@ export const LIVE_TRACKER_CSS = `
 .stp-lt-marker__heading[hidden]{display:none}
 .stp-lt-marker__heading::before{content:'';position:absolute;left:50%;top:-9px;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid var(--stp-lt-ring,${NAVY});filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
 .stp-lt-marker__label{position:absolute;left:22px;bottom:14px;white-space:nowrap;font:600 12px/1.3 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:${NAVY};background:rgba(255,255,255,.92);padding:2px 6px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.stp-lt-marker--custom .stp-lt-marker__badge{bottom:-20px;width:40px;height:40px;border:0;border-radius:0;background:transparent;box-shadow:none}
+.stp-lt-marker--custom .stp-lt-marker__badge::after{display:none}
+.stp-lt-marker__img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));user-select:none;-webkit-user-drag:none}
+.stp-lt-marker--custom .stp-lt-marker__label{left:24px;bottom:-9px}
+.stp-lt-marker--custom .stp-lt-marker__broke-down{left:8px;bottom:8px}
 @media (prefers-reduced-motion:reduce){.stp-lt-marker,.stp-lt-marker__heading{transition:none}}
 `;
 

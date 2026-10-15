@@ -49,6 +49,17 @@ afterEach(() => {
 });
 
 describe('MarkerLayer', () => {
+  it('draws the driver’s own icon when the tractor has one, and the glyph again when it is cleared', () => {
+    const { layer } = newLayer();
+    const url = 'https://images.snowtracker.pro/tenants/t/tractor-icons/frosty.png';
+    layer.sync([tractor({ iconUrl: url })]);
+    const [m] = FakeMarker.live();
+    expect(m?.content.querySelector('.stp-lt-marker__badge img')?.getAttribute('src')).toBe(url);
+    layer.sync([tractor({ iconUrl: null })]);
+    expect(m?.content.querySelector('.stp-lt-marker__badge img')).toBeNull();
+    expect(m?.content.querySelector('.stp-lt-marker__badge svg')).not.toBeNull();
+  });
+
   it('draws a marker with the vehicle name, glyph, route ring and heading', () => {
     const { layer } = newLayer();
     layer.sync([tractor()]);

@@ -117,6 +117,12 @@ export interface TrackingTractor {
   vehicleName: string;
   /** Vehicle icon preset key (`tractor`, `plow-truck`, …). Treat unknown keys as `tractor`. */
   icon: string;
+  /**
+   * The icon the driver picked for this tractor — an absolute http(s) URL of a
+   * small PNG (at most 256 px), or null when they picked none. Null: draw the
+   * `icon` preset instead.
+   */
+  iconUrl: string | null;
   routeId: string;
   lat: number;
   lng: number;

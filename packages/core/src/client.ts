@@ -94,6 +94,8 @@ interface SDKTrackingWire {
         id: string;
         vehicle_name: string;
         icon: string;
+        /** Absent from APIs older than ENG-173; treated as null. */
+        icon_url?: string | null;
         route_id: string;
         lat: number;
         lng: number;
@@ -289,6 +291,7 @@ export function createClient(opts: ClientOptions): SnowTrackerClient {
           id: t.id,
           vehicleName: t.vehicle_name,
           icon: t.icon,
+          iconUrl: httpUrlOrNull(t.icon_url),
           routeId: t.route_id,
           lat: t.lat,
           lng: t.lng,
@@ -300,4 +303,20 @@ export function createClient(opts: ClientOptions): SnowTrackerClient {
       };
     },
   };
+}
+
+/**
+ * An http(s) URL, or null. The icon URL is drawn as an image on a stranger's
+ * website, so anything that is not a plain web address (a blank, a
+ * `javascript:` or `data:` URL, an older API's missing field) reads as "no
+ * icon" and the preset glyph is drawn instead.
+ */
+export function httpUrlOrNull(raw: unknown): string | null {
+  if (typeof raw !== 'string' || raw.trim() === '') return null;
+  try {
+    const u = new URL(raw);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : null;
+  } catch {
+    return null;
+  }
 }

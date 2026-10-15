@@ -85,7 +85,7 @@ const snapshot = await client.getTracking(); // accepts { signal }
 //   asOf,                       // server time — measure a fix's age against this
 //   center,                     // { lat, lng } | null — where to rest the map
 //   routes:   [{ id, name, color }],
-//   tractors: [{ id, vehicleName, icon, routeId, lat, lng, headingDeg, recordedAt }],
+//   tractors: [{ id, vehicleName, icon, iconUrl, routeId, lat, lng, headingDeg, recordedAt }],
 // }
 ```
 

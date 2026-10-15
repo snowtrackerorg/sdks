@@ -175,6 +175,7 @@ describe('client wire assumptions match the OpenAPI subset', () => {
     expect(Object.keys(schemas.SDKTrackingTractor.properties).sort()).toEqual([
       'heading_deg',
       'icon',
+      'icon_url',
       'id',
       'lat',
       'lng',
@@ -186,6 +187,7 @@ describe('client wire assumptions match the OpenAPI subset', () => {
     expect([...schemas.SDKTrackingTractor.required].sort()).toEqual([
       'heading_deg',
       'icon',
+      'icon_url',
       'id',
       'lat',
       'lng',
