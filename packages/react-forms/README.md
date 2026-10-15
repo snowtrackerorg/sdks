@@ -104,6 +104,14 @@ export function QuoteForm() {
 }
 ```
 
+## Environments: the key decides
+
+A publishable key knows which SnowTracker environment minted it. A key from staging
+(`pk_live_stg_…` / `pk_test_stg_…`) talks to `https://api.staging.snowtracker.pro`;
+any other key talks to production, `https://api.snowtracker.pro`. You do not need to set
+a base URL — swap the key and the SDK follows. `baseUrl` is an override (for example a
+local API at `http://localhost:8080`), not a requirement.
+
 `submit()` pre-validates client-side (required fields, enum membership, byte-length
 caps — the same rules the server enforces) and puts messages in `errors`, keyed by
 field key. Server-side 422s land in `errors` the same way; failures with no field to

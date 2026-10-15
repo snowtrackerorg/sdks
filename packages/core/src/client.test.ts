@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createClient } from './client.js';
+import { API_BASE_URLS, createClient, resolveBaseUrl } from './client.js';
 
 const SAMPLE = {
   tenant_id: 'org_1',
@@ -94,5 +94,53 @@ describe('createClient', () => {
       code: 'network_error',
       status: 0,
     });
+  });
+});
+
+describe('resolveBaseUrl', () => {
+  it('sends a production key to production', () => {
+    expect(resolveBaseUrl('pk_live_0123456789ABCDEFGHIJabcdefghij0123456789')).toBe(
+      'https://api.snowtracker.pro',
+    );
+    expect(resolveBaseUrl('pk_test_abc')).toBe(API_BASE_URLS.production);
+  });
+
+  it('sends a staging key to staging', () => {
+    expect(resolveBaseUrl('pk_test_stg_0123456789ABCDEFGHIJabcdefghij0123456789')).toBe(
+      'https://api.staging.snowtracker.pro',
+    );
+    expect(resolveBaseUrl('pk_live_stg_abc')).toBe(API_BASE_URLS.staging);
+  });
+
+  it('lets an explicit baseUrl win over the key, trimming trailing slashes', () => {
+    expect(resolveBaseUrl('pk_test_stg_abc', 'http://localhost:8080/')).toBe(
+      'http://localhost:8080',
+    );
+    expect(resolveBaseUrl('pk_live_abc', 'https://api.staging.snowtracker.pro')).toBe(
+      'https://api.staging.snowtracker.pro',
+    );
+  });
+
+  it('treats a malformed key as production', () => {
+    for (const key of [
+      '',
+      'garbage',
+      'stg_pk_test_abc',
+      'pk_stg_abc',
+      'pk_test_stgabc',
+      'pk_prod_stg_abc',
+    ]) {
+      expect(resolveBaseUrl(key)).toBe(API_BASE_URLS.production);
+    }
+  });
+
+  it('createClient uses the staging API for a staging key', async () => {
+    const fetchMock = mockFetchOnce(SAMPLE);
+    vi.stubGlobal('fetch', fetchMock);
+    await createClient({ publishableKey: 'pk_test_stg_x' }).getTenant();
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.staging.snowtracker.pro/v1/sdk/tenant',
+      expect.anything(),
+    );
   });
 });

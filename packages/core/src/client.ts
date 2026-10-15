@@ -11,7 +11,27 @@ import type {
   TrackingSnapshot,
 } from './types.js';
 
-const DEFAULT_BASE_URL = 'https://api.snowtracker.pro';
+/**
+ * The SnowTracker API host for each environment. A publishable key says which
+ * environment minted it: staging keys carry a `stg` segment
+ * (`pk_live_stg_…` / `pk_test_stg_…`); production keys have none.
+ */
+export const API_BASE_URLS = {
+  production: 'https://api.snowtracker.pro',
+  staging: 'https://api.staging.snowtracker.pro',
+} as const;
+
+const STAGING_KEY = /^pk_(live|test)_stg_/;
+
+/**
+ * The API base URL a client should use: an explicit `baseUrl` wins (trailing
+ * slashes trimmed); otherwise the key decides — a staging key goes to the
+ * staging API, anything else to production.
+ */
+export function resolveBaseUrl(publishableKey: string, baseUrl?: string): string {
+  if (baseUrl) return baseUrl.replace(/\/+$/, '');
+  return STAGING_KEY.test(publishableKey) ? API_BASE_URLS.staging : API_BASE_URLS.production;
+}
 const KEY_HEADER = 'X-Snowtracker-Publishable-Key';
 
 function statusToCode(status: number): string {
@@ -142,7 +162,7 @@ export function createClient(opts: ClientOptions): SnowTrackerClient {
   if (!opts || !opts.publishableKey) {
     throw new SnowTrackerError('publishableKey is required', 'config_error', 0);
   }
-  const baseUrl = (opts.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
+  const baseUrl = resolveBaseUrl(opts.publishableKey, opts.baseUrl);
   const key = opts.publishableKey;
 
   async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
