@@ -1,5 +1,16 @@
 # @snowtrackerpro/sdk-core
 
+## 0.6.0
+
+### Minor Changes
+
+- df266dc: The publishable key now decides the environment. A staging key (`pk_live_stg_…` / `pk_test_stg_…`) talks to `https://api.staging.snowtracker.pro`; any other key talks to `https://api.snowtracker.pro`. `baseUrl` becomes an override rather than a requirement. New exports from `@snowtrackerpro/sdk-core`: `resolveBaseUrl(publishableKey, baseUrl?)` and `API_BASE_URLS`.
+
+### Patch Changes
+
+- e2fe62f: A tractor whose driver has marked it broke down is now drawn with a red wrench on its marker and "Broke down" in its caption (`labels.brokeDown` to translate). `TrackingTractor` gains `status: 'on_route' | 'broke_down'` (new type `TrackingTractorStatus`); a server that sends no status reads as `on_route`.
+- 4a23466: A tractor can carry the icon its driver picked. `TrackingTractor` gains `iconUrl: string | null` (an http(s) URL of a small PNG; anything else, or an older API that omits `icon_url`, reads as null). `<LiveTracker>` draws that image centred on the tractor's position, without the heading arrow, and falls back to the preset glyph from `icon` when there is no URL or the image fails to load. A broke-down tractor keeps the red wrench badge, drawn over the picked image.
+
 ## 0.5.0
 
 ### Minor Changes
