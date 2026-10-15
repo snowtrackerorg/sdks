@@ -15,6 +15,7 @@ const WIRE = {
       id: 'trk_1',
       vehicle_name: 'Tractor 4',
       icon: 'tractor',
+      icon_url: 'https://images.snowtracker.pro/tenants/t/tractor-icons/frosty.png',
       route_id: 'rte_1',
       lat: 44.51,
       lng: -80.21,
@@ -81,6 +82,7 @@ describe('getTracking', () => {
           id: 'trk_1',
           vehicleName: 'Tractor 4',
           icon: 'tractor',
+          iconUrl: 'https://images.snowtracker.pro/tenants/t/tractor-icons/frosty.png',
           routeId: 'rte_1',
           lat: 44.51,
           lng: -80.21,
@@ -93,6 +95,7 @@ describe('getTracking', () => {
           id: 'trk_2',
           vehicleName: 'Plow 2',
           icon: 'plow-truck',
+          iconUrl: null,
           routeId: 'rte_2',
           lat: 44.52,
           lng: -80.22,
@@ -102,6 +105,35 @@ describe('getTracking', () => {
         },
       ],
     });
+  });
+
+  it('reads anything but an http(s) icon_url as no icon', async () => {
+    const tractor = WIRE.tractors[0];
+    const wire = {
+      ...WIRE,
+      tractors: [
+        { ...tractor, id: 'a', icon_url: null },
+        { ...tractor, id: 'b', icon_url: '' },
+        { ...tractor, id: 'c', icon_url: 'javascript:alert(1)' },
+        { ...tractor, id: 'd', icon_url: 'data:image/png;base64,AAAA' },
+        { ...tractor, id: 'e', icon_url: 'not a url' },
+        {
+          ...tractor,
+          id: 'f',
+          icon_url: 'http://localhost:8080/tractor-icons/defaults/tractor.png',
+        },
+      ],
+    };
+    vi.stubGlobal('fetch', mockFetch(wire));
+    const { tractors } = await client().getTracking();
+    expect(tractors.map((t) => t.iconUrl)).toEqual([
+      null,
+      null,
+      null,
+      null,
+      null,
+      'http://localhost:8080/tractor-icons/defaults/tractor.png',
+    ]);
   });
 
   it('reads null lists and a null center as empty', async () => {

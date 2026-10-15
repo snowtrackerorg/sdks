@@ -266,6 +266,8 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
           lat: t.lat,
           lng: t.lng,
           icon: t.icon,
+          // Older APIs send no icon_url; the core client reads that as null.
+          iconUrl: t.iconUrl ?? null,
           headingDeg: t.headingDeg,
           ringColor: colorOf.get(t.routeId) ?? null,
           stale,

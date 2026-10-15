@@ -578,7 +578,7 @@
             "type": ["number", "null"]
           },
           "icon": {
-            "description": "Preset icon key. A custom uploaded icon is reported as the vehicle's default preset — never a URL.",
+            "description": "Preset icon key. A vehicle's custom uploaded icon is reported as its default preset; the driver's picked tractor icon comes in icon_url.",
             "enum": [
               "tractor",
               "plow-truck",
@@ -590,6 +590,10 @@
               "wrench"
             ],
             "type": "string"
+          },
+          "icon_url": {
+            "description": "The tractor icon the driver picked: an absolute URL of a PNG, at most 256 px a side. Null when they picked none — draw the icon preset.",
+            "type": ["string", "null"]
           },
           "id": {
             "description": "Opaque and stable for one run only — it cannot be used to follow a tractor from one day to the next.",
@@ -624,6 +628,7 @@
           "id",
           "vehicle_name",
           "icon",
+          "icon_url",
           "route_id",
           "status",
           "lat",

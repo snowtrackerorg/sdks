@@ -1,12 +1,19 @@
 // What a tractor looks like on the map — the same round badge, vehicle glyph
 // and caption the SnowTracker ops app draws, plus the route's colour as a ring
 // and an arrow for the heading. Pure DOM, no Maps API, no React.
+//
+// When the driver picked their own icon (iconUrl, ENG-173) the marker is that
+// image instead, centred on the fix — no badge circle, no pointer, no heading arrow,
+// and the image is never rotated. If the image fails to load, the marker goes
+// back to the glyph for that URL.
 import { BROKE_DOWN_BADGE_SVG, vehicleIconSvg } from './vehicleIcons.js';
 
 export interface MarkerPaint {
   /** The vehicle's name, already suffixed with its age when stale. */
   caption: string;
   icon: string;
+  /** The driver's own icon (an http(s) PNG URL), or null for the `icon` glyph. */
+  iconUrl?: string | null;
   /** Route colour for the ring; null falls back to the default navy. */
   ringColor: string | null;
   headingDeg: number | null;
@@ -38,7 +45,11 @@ export function createMarkerContent(doc: Document, paint: MarkerPaint): HTMLElem
   return root;
 }
 
+/** The last paint each marker got — what an image error repaints with. */
+const lastPaint = new WeakMap<HTMLElement, MarkerPaint>();
+
 export function paintMarkerContent(root: HTMLElement, paint: MarkerPaint): void {
+  lastPaint.set(root, paint);
   root.classList.toggle('stp-lt-marker--quiet', paint.stale);
   root.classList.toggle('stp-lt-marker--broke-down', paint.brokeDown);
   const wrench = root.querySelector<HTMLElement>('.stp-lt-marker__broke-down');
@@ -49,9 +60,33 @@ export function paintMarkerContent(root: HTMLElement, paint: MarkerPaint): void 
   else root.style.removeProperty('--stp-lt-ring');
 
   const badge = root.querySelector<HTMLElement>('.stp-lt-marker__badge');
-  if (badge && badge.dataset.icon !== paint.icon) {
-    badge.dataset.icon = paint.icon;
-    badge.innerHTML = vehicleIconSvg(paint.icon); // our own constant SVG, never API text
+  const url = paint.iconUrl ?? null;
+  // A URL that already failed in this marker is not retried on every poll.
+  const useImage = url !== null && root.dataset.iconFailed !== url;
+  root.classList.toggle('stp-lt-marker--custom', useImage);
+  if (badge) {
+    const key = useImage ? `url:${url}` : `glyph:${paint.icon}`;
+    if (badge.dataset.icon !== key) {
+      badge.dataset.icon = key;
+      if (useImage) {
+        const img = root.ownerDocument.createElement('img');
+        img.className = 'stp-lt-marker__img';
+        // Decorative: the caption beside it already names the vehicle.
+        img.alt = '';
+        img.decoding = 'async';
+        img.draggable = false;
+        img.addEventListener('error', () => {
+          // Only if this image is still the one being shown.
+          if (badge.dataset.icon !== key) return;
+          root.dataset.iconFailed = url;
+          paintMarkerContent(root, lastPaint.get(root) ?? paint);
+        });
+        img.src = url; // set as a property, never as markup
+        badge.replaceChildren(img);
+      } else {
+        badge.innerHTML = vehicleIconSvg(paint.icon); // our own constant SVG, never API text
+      }
+    }
   }
 
   const label = root.querySelector<HTMLElement>('.stp-lt-marker__label');
@@ -61,7 +96,8 @@ export function paintMarkerContent(root: HTMLElement, paint: MarkerPaint): void 
   if (heading) {
     const deg = paint.headingDeg;
     const known = typeof deg === 'number' && Number.isFinite(deg);
-    heading.hidden = !known;
+    // A picked icon is drawn as the office drew it: no heading arrow.
+    heading.hidden = !known || useImage;
     if (known) heading.style.transform = `rotate(${deg}deg)`;
   }
 }
