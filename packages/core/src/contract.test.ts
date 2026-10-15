@@ -180,6 +180,7 @@ describe('client wire assumptions match the OpenAPI subset', () => {
       'lng',
       'recorded_at',
       'route_id',
+      'status',
       'vehicle_name',
     ]);
     expect([...schemas.SDKTrackingTractor.required].sort()).toEqual([
@@ -190,8 +191,13 @@ describe('client wire assumptions match the OpenAPI subset', () => {
       'lng',
       'recorded_at',
       'route_id',
+      'status',
       'vehicle_name',
     ]);
+  });
+
+  it('a tractor status is on_route or broke_down', () => {
+    expect(schemas.SDKTrackingTractor.properties.status.enum).toEqual(['on_route', 'broke_down']);
   });
 
   it('errors are RFC7807 problems with a detail string and optional errors list', () => {

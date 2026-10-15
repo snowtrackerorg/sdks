@@ -527,7 +527,7 @@
             "type": "array"
           },
           "tractors": {
-            "description": "Tractors currently out on a route whose last fix is under 15 minutes old. Always an array; empty when nobody is out.",
+            "description": "Tractors currently working a route whose last fix is under 15 minutes old. A tractor still driving out to its first stop is not listed. Always an array; empty when nobody is out.",
             "items": {
               "$ref": "#/components/schemas/SDKTrackingTractor"
             },
@@ -611,6 +611,11 @@
             "description": "Matches an id in routes.",
             "type": "string"
           },
+          "status": {
+            "description": "broke_down while the driver has the tractor marked broke down — draw it with the broke-down icon; on_route otherwise.",
+            "enum": ["on_route", "broke_down"],
+            "type": "string"
+          },
           "vehicle_name": {
             "type": "string"
           }
@@ -620,6 +625,7 @@
           "vehicle_name",
           "icon",
           "route_id",
+          "status",
           "lat",
           "lng",
           "heading_deg",

@@ -191,6 +191,50 @@ describe('<LiveTracker> route filter', () => {
   });
 });
 
+describe('<LiveTracker> a broke-down tractor', () => {
+  it('wears the red wrench and says "Broke down" in its caption; the other one does not', async () => {
+    respond({
+      ...TWO_OUT,
+      tractors: [
+        wireTractor({ status: 'broke_down' }),
+        wireTractor({
+          id: 'trk_2',
+          vehicle_name: 'Plow 2',
+          route_id: 'rte_harbour',
+          lat: 44.49,
+          status: 'on_route',
+        }),
+      ],
+    });
+    render(<LiveTracker {...KEYS} />);
+    await waitFor(() => expect(labels()).toEqual(['Tractor 4 · Broke down', 'Plow 2']));
+    const [broke, fine] = FakeMarker.live();
+    expect(broke?.content.classList.contains('stp-lt-marker--broke-down')).toBe(true);
+    expect(broke?.content.querySelector<HTMLElement>('.stp-lt-marker__broke-down')?.hidden).toBe(
+      false,
+    );
+    expect(fine?.content.classList.contains('stp-lt-marker--broke-down')).toBe(false);
+    expect(fine?.content.querySelector<HTMLElement>('.stp-lt-marker__broke-down')?.hidden).toBe(
+      true,
+    );
+  });
+
+  it('an older server with no status draws an ordinary tractor', async () => {
+    respond(TWO_OUT);
+    render(<LiveTracker {...KEYS} />);
+    await waitFor(() => expect(labels()).toEqual(['Tractor 4', 'Plow 2']));
+    expect(FakeMarker.live()[0]?.content.classList.contains('stp-lt-marker--broke-down')).toBe(
+      false,
+    );
+  });
+
+  it('the words are a label like any other', async () => {
+    respond({ ...TWO_OUT, tractors: [wireTractor({ status: 'broke_down' })] });
+    render(<LiveTracker {...KEYS} labels={{ brokeDown: 'En panne' }} />);
+    await waitFor(() => expect(labels()).toEqual(['Tractor 4 · En panne']));
+  });
+});
+
 describe('<LiveTracker> empty states', () => {
   it('a route with nobody out → a centred overlay', async () => {
     respond(TWO_OUT);

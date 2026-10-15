@@ -95,6 +95,13 @@ export const VEHICLE_ICON_SVG: Readonly<Record<string, string>> = {
 export const DEFAULT_VEHICLE_ICON_KEY = 'tractor';
 
 /**
+ * The broke-down mark: the same wrench, drawn on a red disc on the marker's
+ * shoulder while the driver has the tractor marked broke down. The ops app
+ * and the customer portal draw the same mark.
+ */
+export const BROKE_DOWN_BADGE_SVG = WRENCH;
+
+/**
  * The SVG for a preset key. An unknown key — a preset added server-side after
  * this package shipped — draws the default tractor: that is what the fleet is.
  */

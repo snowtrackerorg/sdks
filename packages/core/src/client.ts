@@ -99,6 +99,7 @@ interface SDKTrackingWire {
         lng: number;
         heading_deg: number | null;
         recorded_at: string;
+        status?: string;
       }[]
     | null;
 }
@@ -293,6 +294,8 @@ export function createClient(opts: ClientOptions): SnowTrackerClient {
           lng: t.lng,
           headingDeg: t.heading_deg ?? null,
           recordedAt: t.recorded_at,
+          // An older server sends no status: an ordinary tractor.
+          status: t.status === 'broke_down' ? 'broke_down' : 'on_route',
         })),
       };
     },

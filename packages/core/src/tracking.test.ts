@@ -30,6 +30,7 @@ const WIRE = {
       lng: -80.22,
       heading_deg: null,
       recorded_at: '2026-12-01T09:59:55Z',
+      status: 'broke_down',
     },
   ],
 };
@@ -85,6 +86,8 @@ describe('getTracking', () => {
           lng: -80.21,
           headingDeg: 90,
           recordedAt: '2026-12-01T09:59:50Z',
+          // No status on the wire (an older server): an ordinary tractor.
+          status: 'on_route',
         },
         {
           id: 'trk_2',
@@ -95,6 +98,7 @@ describe('getTracking', () => {
           lng: -80.22,
           headingDeg: null,
           recordedAt: '2026-12-01T09:59:55Z',
+          status: 'broke_down',
         },
       ],
     });

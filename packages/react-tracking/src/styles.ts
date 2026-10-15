@@ -29,6 +29,11 @@ export const LIVE_TRACKER_CSS = `
 .stp-lt-marker__badge{position:absolute;left:0;bottom:6px;transform:translateX(-50%);width:34px;height:34px;box-sizing:border-box;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#fff;border:3px solid var(--stp-lt-ring,${NAVY});color:${NAVY};box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .stp-lt-marker__badge::after{content:'';position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--stp-lt-ring,${NAVY})}
 .stp-lt-marker__badge svg{width:20px;height:20px;display:block}
+.stp-lt-marker__broke-down{position:absolute;left:5px;bottom:30px;width:18px;height:18px;box-sizing:border-box;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#d92d20;color:#fff;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35);pointer-events:none}
+.stp-lt-marker__broke-down[hidden]{display:none}
+.stp-lt-marker__broke-down svg{width:10px;height:10px;display:block;stroke-width:2.6}
+.stp-lt-marker--broke-down .stp-lt-marker__badge{border-color:#d92d20}
+.stp-lt-marker--broke-down .stp-lt-marker__badge::after{border-top-color:#d92d20}
 .stp-lt-marker__heading{position:absolute;left:-17px;bottom:6px;width:34px;height:34px;pointer-events:none;transition:transform .4s ease}
 .stp-lt-marker__heading[hidden]{display:none}
 .stp-lt-marker__heading::before{content:'';position:absolute;left:50%;top:-9px;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid var(--stp-lt-ring,${NAVY});filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}

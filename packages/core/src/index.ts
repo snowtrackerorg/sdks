@@ -33,4 +33,5 @@ export type {
   TrackingRoute,
   TrackingSnapshot,
   TrackingTractor,
+  TrackingTractorStatus,
 } from './types.js';

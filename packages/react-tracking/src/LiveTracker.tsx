@@ -42,6 +42,8 @@ export interface LiveTrackerLabels {
   mapsLoadError: string;
   /** Caption suffix for a tractor that has gone quiet, e.g. "3m ago". */
   lastSeen: (minutes: number) => string;
+  /** Caption suffix for a tractor the driver has marked broke down. */
+  brokeDown: string;
 }
 
 export interface LiveTrackerProps {
@@ -90,6 +92,7 @@ const DEFAULT_LABELS: LiveTrackerLabels = {
   missingGoogleMapsApiKey: 'LiveTracker needs a Google Maps API key — pass googleMapsApiKey',
   missingPublishableKey: 'LiveTracker needs a SnowTracker publishable key — pass publishableKey',
   mapsLoadError: 'The map couldn’t load.',
+  brokeDown: 'Broke down',
   lastSeen: (minutes) =>
     minutes < 1
       ? 'just now'
@@ -257,6 +260,7 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
       .map((t): LayerTractor => {
         const stale = isStale(t.recordedAt, now);
         const minutes = Math.floor(ageMs(t.recordedAt, now) / 60_000);
+        const brokeDown = t.status === 'broke_down';
         return {
           id: t.id,
           lat: t.lat,
@@ -265,7 +269,14 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
           headingDeg: t.headingDeg,
           ringColor: colorOf.get(t.routeId) ?? null,
           stale,
-          caption: stale ? `${t.vehicleName} · ${labels.lastSeen(minutes)}` : t.vehicleName,
+          brokeDown,
+          caption: [
+            t.vehicleName,
+            brokeDown ? labels.brokeDown : '',
+            stale ? labels.lastSeen(minutes) : '',
+          ]
+            .filter(Boolean)
+            .join(' · '),
         };
       });
     return { visible: shown, anyOut: out.length > 0 };

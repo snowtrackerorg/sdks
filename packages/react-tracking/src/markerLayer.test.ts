@@ -12,6 +12,7 @@ const tractor = (over: Partial<LayerTractor> = {}): LayerTractor => ({
   ringColor: '#208aef',
   headingDeg: 90,
   stale: false,
+  brokeDown: false,
   ...over,
 });
 
