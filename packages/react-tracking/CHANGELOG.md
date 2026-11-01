@@ -1,5 +1,16 @@
 # @snowtrackerpro/sdk-tracking-react
 
+## 0.2.0
+
+### Minor Changes
+
+- 8e41d4e: Add a `server` option (`'production'` | `'staging'`) to `createClient` and a matching `server` prop on `<LiveTracker>`. Production stays the default; pass a staging key with `server: 'staging'` so switching environments is one config value. `baseUrl` still overrides both.
+
+### Patch Changes
+
+- Updated dependencies [8e41d4e]
+  - @snowtrackerpro/sdk-core@0.7.0
+
 ## 0.1.1
 
 ### Patch Changes

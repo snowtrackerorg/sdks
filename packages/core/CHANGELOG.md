@@ -1,5 +1,11 @@
 # @snowtrackerpro/sdk-core
 
+## 0.7.0
+
+### Minor Changes
+
+- 8e41d4e: Add a `server` option (`'production'` | `'staging'`) to `createClient` and a matching `server` prop on `<LiveTracker>`. Production stays the default; pass a staging key with `server: 'staging'` so switching environments is one config value. `baseUrl` still overrides both.
+
 ## 0.6.0
 
 ### Minor Changes
