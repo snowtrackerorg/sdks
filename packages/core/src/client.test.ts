@@ -121,6 +121,35 @@ describe('resolveBaseUrl', () => {
     );
   });
 
+  it('lets server pick the environment, over the key', () => {
+    expect(resolveBaseUrl('pk_live_abc', undefined, 'staging')).toBe(API_BASE_URLS.staging);
+    expect(resolveBaseUrl('pk_test_stg_abc', undefined, 'production')).toBe(
+      API_BASE_URLS.production,
+    );
+    expect(resolveBaseUrl('pk_live_abc', undefined, 'production')).toBe(API_BASE_URLS.production);
+  });
+
+  it('lets baseUrl win over server', () => {
+    expect(resolveBaseUrl('pk_live_abc', 'http://localhost:8080', 'staging')).toBe(
+      'http://localhost:8080',
+    );
+  });
+
+  it('rejects an unknown server with a config_error', () => {
+    expect(() =>
+      resolveBaseUrl('pk_live_abc', undefined, 'prod' as unknown as 'production'),
+    ).toThrowError(expect.objectContaining({ code: 'config_error' }));
+  });
+
+  it('createClient talks to staging when server is "staging"', async () => {
+    const fetchMock = mockFetchOnce(SAMPLE);
+    vi.stubGlobal('fetch', fetchMock);
+    await createClient({ publishableKey: 'pk_live_x', server: 'staging' }).getTenant();
+    expect(String(fetchMock.mock.calls[0]?.[0])).toMatch(
+      /^https:\/\/api\.staging\.snowtracker\.pro\//,
+    );
+  });
+
   it('treats a malformed key as production', () => {
     for (const key of [
       '',

@@ -23,13 +23,34 @@ export const API_BASE_URLS = {
 
 const STAGING_KEY = /^pk_(live|test)_stg_/;
 
+/** The SnowTracker environments a client can talk to. */
+export type SnowTrackerServer = keyof typeof API_BASE_URLS;
+
 /**
- * The API base URL a client should use: an explicit `baseUrl` wins (trailing
- * slashes trimmed); otherwise the key decides — a staging key goes to the
- * staging API, anything else to production.
+ * The API base URL a client should use, first match wins:
+ * 1. an explicit `baseUrl` (trailing slashes trimmed);
+ * 2. an explicit `server` — `'production'` or `'staging'`;
+ * 3. the key — a staging key (`pk_…_stg_…`) goes to staging, anything else to production.
+ *
+ * So with nothing set, a client talks to production.
  */
-export function resolveBaseUrl(publishableKey: string, baseUrl?: string): string {
+export function resolveBaseUrl(
+  publishableKey: string,
+  baseUrl?: string,
+  server?: SnowTrackerServer,
+): string {
   if (baseUrl) return baseUrl.replace(/\/+$/, '');
+  if (server) {
+    const url = API_BASE_URLS[server];
+    if (!url) {
+      throw new SnowTrackerError(
+        `Unknown server "${String(server)}" — use "production" or "staging".`,
+        'config_error',
+        0,
+      );
+    }
+    return url;
+  }
   return STAGING_KEY.test(publishableKey) ? API_BASE_URLS.staging : API_BASE_URLS.production;
 }
 const KEY_HEADER = 'X-Snowtracker-Publishable-Key';
@@ -165,7 +186,7 @@ export function createClient(opts: ClientOptions): SnowTrackerClient {
   if (!opts || !opts.publishableKey) {
     throw new SnowTrackerError('publishableKey is required', 'config_error', 0);
   }
-  const baseUrl = resolveBaseUrl(opts.publishableKey, opts.baseUrl);
+  const baseUrl = resolveBaseUrl(opts.publishableKey, opts.baseUrl, opts.server);
   const key = opts.publishableKey;
 
   async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {

@@ -61,7 +61,8 @@ the polling start in the browser.
 | ------------------ | ---------------------------- | --------------- | ---------------------------------------------------------------------------------------------------- |
 | `publishableKey`   | `string`                     | — (required)    | `pk_live_…` / `pk_test_…` from **Settings → Publishable Keys**, with the live tracking scope.        |
 | `googleMapsApiKey` | `string`                     | — (required)    | Your own Google Maps key. Missing → an inline error box, never a crash.                              |
-| `baseUrl`          | `string`                     | from the key    | Override only. The key decides the environment: `pk_…_stg_…` → staging, otherwise production.        |
+| `server`           | `'production' \| 'staging'`  | `'production'`  | Which SnowTracker environment to read. Pair a staging key with `"staging"`.                          |
+| `baseUrl`          | `string`                     | —               | Override only (local API). Wins over `server`.                                                       |
 | `mapId`            | `string`                     | `'DEMO_MAP_ID'` | Your Google Maps Map ID. Read once, at mount. **Set your own for production.**                       |
 | `defaultRouteId`   | `string`                     | All tractors    | Route selected at first render. An id that is not a saved route falls back to All tractors.          |
 | `defaultCenter`    | `{ lat, lng }`               | —               | Where the map rests when nobody is out and the business has no location set. Read once, at mount.    |
@@ -125,13 +126,21 @@ console rather than hidden:
   pointing at a different environment from the one the key came from — the API's message
   names the right host).
 
-## Environments: the key decides
+## Environments: `server`
 
-A publishable key knows which SnowTracker environment minted it. A key from staging
-(`pk_live_stg_…` / `pk_test_stg_…`) talks to `https://api.staging.snowtracker.pro`;
-any other key talks to production, `https://api.snowtracker.pro`. You do not need to set
-a base URL — swap the key and the SDK follows. `baseUrl` is an override (for example a
-local API at `http://localhost:8080`), not a requirement.
+Production is the default. For staging, pass a staging key and `server="staging"`:
+
+```tsx
+<LiveTracker
+  publishableKey={process.env.NEXT_PUBLIC_SNOWTRACKER_PUBLISHABLE_KEY_STAGING!}
+  server="staging"
+  googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+/>
+```
+
+Keep both keys in your config and switching environments is one value. If `server` is
+left out, a staging key (`pk_live_stg_…` / `pk_test_stg_…`) still finds staging on its
+own. `baseUrl` overrides both (for example a local API at `http://localhost:8080`).
 
 ## Google Maps key and Map ID
 

@@ -8,8 +8,16 @@ export interface ClientOptions {
    */
   publishableKey: string;
   /**
-   * Override the API base URL. Normally leave it out — the key picks
-   * https://api.snowtracker.pro or https://api.staging.snowtracker.pro.
+   * Which SnowTracker environment to talk to: `'production'`
+   * (https://api.snowtracker.pro) or `'staging'`
+   * (https://api.staging.snowtracker.pro). Optional — leave it out and a
+   * production key talks to production. Pair a staging key with
+   * `server: 'staging'` so switching environments is one config value.
+   */
+  server?: 'production' | 'staging';
+  /**
+   * Override the API base URL (local development). Wins over `server`.
+   * Normally leave it out.
    */
   baseUrl?: string;
 }
