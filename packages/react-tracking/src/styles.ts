@@ -13,8 +13,10 @@ const NAVY = '#0f2747';
 
 export const LIVE_TRACKER_CSS = `
 :where(.stp-lt){position:relative;display:flex;flex-direction:column;width:100%;height:480px;box-sizing:border-box;font-family:inherit;color:${NAVY}}
-:where(.stp-lt-bar){flex:0 0 auto;padding:0 0 8px}
+:where(.stp-lt-bar){flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 0 8px}
 :where(.stp-lt-select){font:inherit;max-width:100%;padding:6px 10px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;color:inherit}
+:where(.stp-lt-button){font:inherit;padding:6px 12px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;color:inherit;cursor:pointer}
+:where(.stp-lt-button:disabled){opacity:.5;cursor:default}
 :where(.stp-lt-stage){position:relative;flex:1 1 auto;min-height:0;border-radius:12px;overflow:hidden;background:#eef2f6}
 :where(.stp-lt-map){position:absolute;inset:0}
 .stp-lt-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -34,16 +36,12 @@ export const LIVE_TRACKER_CSS = `
 .stp-lt-marker__broke-down svg{width:10px;height:10px;display:block;stroke-width:2.6}
 .stp-lt-marker--broke-down .stp-lt-marker__badge{border-color:#d92d20}
 .stp-lt-marker--broke-down .stp-lt-marker__badge::after{border-top-color:#d92d20}
-.stp-lt-marker__heading{position:absolute;left:-17px;bottom:6px;width:34px;height:34px;pointer-events:none;transition:transform .4s ease}
-.stp-lt-marker__heading[hidden]{display:none}
-.stp-lt-marker__heading::before{content:'';position:absolute;left:50%;top:-9px;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid var(--stp-lt-ring,${NAVY});filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
 .stp-lt-marker__label{position:absolute;left:22px;bottom:14px;white-space:nowrap;font:600 12px/1.3 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:${NAVY};background:rgba(255,255,255,.92);padding:2px 6px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .stp-lt-marker--custom .stp-lt-marker__badge{bottom:-20px;width:40px;height:40px;border:0;border-radius:0;background:transparent;box-shadow:none}
 .stp-lt-marker--custom .stp-lt-marker__badge::after{display:none}
 .stp-lt-marker__img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));user-select:none;-webkit-user-drag:none}
 .stp-lt-marker--custom .stp-lt-marker__label{left:24px;bottom:-9px}
 .stp-lt-marker--custom .stp-lt-marker__broke-down{left:8px;bottom:8px}
-@media (prefers-reduced-motion:reduce){.stp-lt-marker,.stp-lt-marker__heading{transition:none}}
 `;
 
 /** Inject the stylesheet once per document. Safe to call from every mount. */

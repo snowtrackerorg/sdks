@@ -60,7 +60,7 @@ describe('MarkerLayer', () => {
     expect(m?.content.querySelector('.stp-lt-marker__badge svg')).not.toBeNull();
   });
 
-  it('draws a marker with the vehicle name, glyph, route ring and heading', () => {
+  it('draws a marker with the vehicle name, glyph and route ring — one pointer, no heading arrow', () => {
     const { layer } = newLayer();
     layer.sync([tractor()]);
     const [m] = FakeMarker.live();
@@ -68,17 +68,7 @@ describe('MarkerLayer', () => {
     expect(m?.position).toEqual({ lat: 44.5, lng: -80.2 });
     expect(m?.content.style.getPropertyValue('--stp-lt-ring')).toBe('#208aef');
     expect(m?.content.querySelector('.stp-lt-marker__badge svg')).not.toBeNull();
-    const heading = m?.content.querySelector<HTMLElement>('.stp-lt-marker__heading');
-    expect(heading?.hidden).toBe(false);
-    expect(heading?.style.transform).toBe('rotate(90deg)');
-  });
-
-  it('hides the heading arrow when the device reported none', () => {
-    const { layer } = newLayer();
-    layer.sync([tractor({ headingDeg: null })]);
-    const heading =
-      FakeMarker.live()[0]?.content.querySelector<HTMLElement>('.stp-lt-marker__heading');
-    expect(heading?.hidden).toBe(true);
+    expect(m?.content.querySelector('.stp-lt-marker__heading')).toBeNull();
   });
 
   it('writes the name as text — markup in a vehicle name is never parsed', () => {

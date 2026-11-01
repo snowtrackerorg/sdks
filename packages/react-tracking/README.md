@@ -24,9 +24,11 @@ export function WhereAreTheTractors() {
 
 That is the whole integration. The component fetches the live map every 10 seconds,
 draws one marker per tractor (vehicle icon, vehicle name, a ring in the route's colour,
-an arrow for its heading), and glides markers between updates. The dropdown lists
+one pointer down to its position), and glides markers between updates. The dropdown lists
 **All tractors** and then every saved route; picking a route shows only the tractors on
-it and frames the map on them.
+it and frames the map on them. Beside it, a **Show tractors** button frames them again
+after a visitor has panned or zoomed away. The map has zoom +/− and Map/Satellite
+controls; style the button with `.stp-lt-button`.
 
 ### Next.js (App Router)
 
