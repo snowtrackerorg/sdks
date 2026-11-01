@@ -21,15 +21,23 @@ const tenant = await client.getTenant();
 // { tenantId, tenantName, mode, logoUrl, primaryHex }
 ```
 
-### Environments: the key decides
+### Environments: `server`
 
-A publishable key knows which SnowTracker environment minted it. A key from staging
-(`pk_live_stg_…` / `pk_test_stg_…`) talks to `https://api.staging.snowtracker.pro`;
-any other key talks to production, `https://api.snowtracker.pro`. You do not need to set
-a base URL — swap the key and the SDK follows. `baseUrl` is an override (for example a
-local API at `http://localhost:8080`), not a requirement.
+Production is the default — `createClient({ publishableKey })` talks to
+`https://api.snowtracker.pro`. To use staging, pass a staging key and `server: 'staging'`:
 
-`resolveBaseUrl(publishableKey, baseUrl?)` and the `API_BASE_URLS` map are exported if
+```ts
+const client = createClient({
+  publishableKey: process.env.NEXT_PUBLIC_SNOWTRACKER_PUBLISHABLE_KEY_STAGING!,
+  server: 'staging', // https://api.staging.snowtracker.pro
+});
+```
+
+Keep both keys in your config and switching environments is one value. If `server` is
+left out, a staging key (`pk_live_stg_…` / `pk_test_stg_…`) still finds staging on its
+own. `baseUrl` overrides both (for example a local API at `http://localhost:8080`).
+
+`resolveBaseUrl(publishableKey, baseUrl?, server?)` and the `API_BASE_URLS` map are exported if
 you need the same answer outside the client.
 
 ## Quote / contact forms

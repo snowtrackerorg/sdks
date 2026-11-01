@@ -52,8 +52,14 @@ export interface LiveTrackerProps {
   /** YOUR Google Maps JavaScript API key. Required — SnowTracker never ships or proxies one. */
   googleMapsApiKey: string;
   /**
-   * Override the API base URL. Normally leave it out — the key decides the
-   * environment (a `pk_…_stg_…` key talks to staging, any other to production).
+   * Which SnowTracker environment to read: `'production'` (default) or
+   * `'staging'`. Pair a staging key with `server="staging"`, so switching
+   * environments is one config value.
+   */
+  server?: 'production' | 'staging';
+  /**
+   * Override the API base URL (local development). Wins over `server`.
+   * Normally leave it out.
    */
   baseUrl?: string;
   /** Your Google Maps Map ID. Defaults to `DEMO_MAP_ID`, which is for testing only. Read once, at mount. */
@@ -145,6 +151,7 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
   const {
     publishableKey,
     googleMapsApiKey,
+    server,
     baseUrl,
     mapId,
     defaultRouteId,
@@ -201,11 +208,11 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
   const client = useMemo(() => {
     if (!hasMapsKey || !hasPublishableKey) return null;
     try {
-      return createClient({ publishableKey, baseUrl });
+      return createClient({ publishableKey, server, baseUrl });
     } catch {
       return null;
     }
-  }, [hasMapsKey, hasPublishableKey, publishableKey, baseUrl]);
+  }, [hasMapsKey, hasPublishableKey, publishableKey, server, baseUrl]);
 
   useEffect(() => {
     if (!client) return;

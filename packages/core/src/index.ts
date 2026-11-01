@@ -1,4 +1,5 @@
 export { API_BASE_URLS, createClient, resolveBaseUrl } from './client.js';
+export type { SnowTrackerServer } from './client.js';
 export { SnowTrackerError } from './errors.js';
 export type { SnowTrackerErrorCode, SnowTrackerErrorOptions } from './errors.js';
 export { LEAD_CATALOG_VERSION, LEAD_FIELDS, LEAD_LIMITS } from './catalog.js';
