@@ -1,5 +1,11 @@
 # @snowtrackerpro/sdk-tracking-react
 
+## 0.3.0
+
+### Minor Changes
+
+- 2b1bba9: LiveTracker: zoom +/− and Map/Satellite controls (the camera pad is off), a "Show tractors" button beside the route dropdown that frames the tractors again, and markers draw one pointer only — no heading arrow. New label `showTractors`.
+
 ## 0.2.0
 
 ### Minor Changes
