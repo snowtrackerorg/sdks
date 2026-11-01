@@ -16,16 +16,15 @@ const paint = (over: Partial<MarkerPaint> = {}): MarkerPaint => ({
 });
 
 const badgeOf = (root: HTMLElement) => root.querySelector<HTMLElement>('.stp-lt-marker__badge')!;
-const headingOf = (root: HTMLElement) =>
-  root.querySelector<HTMLElement>('.stp-lt-marker__heading')!;
+const headingOf = (root: HTMLElement) => root.querySelector('.stp-lt-marker__heading');
 
 describe('marker content — the driver’s own icon (ENG-173)', () => {
-  it('draws the glyph and the heading arrow when there is no icon URL', () => {
+  it('draws the glyph, with one pointer and no heading arrow, when there is no icon URL', () => {
     const root = createMarkerContent(document, paint());
     expect(badgeOf(root).querySelector('svg')).not.toBeNull();
     expect(badgeOf(root).querySelector('img')).toBeNull();
     expect(root.classList.contains('stp-lt-marker--custom')).toBe(false);
-    expect(headingOf(root).hidden).toBe(false);
+    expect(headingOf(root)).toBeNull();
   });
 
   it('treats an older API’s missing iconUrl as no icon', () => {
@@ -44,7 +43,7 @@ describe('marker content — the driver’s own icon (ENG-173)', () => {
     expect(img?.style.transform).toBe('');
     expect(badgeOf(root).querySelector('svg')).toBeNull();
     expect(root.classList.contains('stp-lt-marker--custom')).toBe(true);
-    expect(headingOf(root).hidden).toBe(true);
+    expect(headingOf(root)).toBeNull();
     // The caption is still there, naming the vehicle.
     expect(root.querySelector('.stp-lt-marker__label')?.textContent).toBe('Tractor 4');
   });
@@ -61,7 +60,7 @@ describe('marker content — the driver’s own icon (ENG-173)', () => {
     paintMarkerContent(root, paint({ iconUrl: null }));
     expect(badgeOf(root).querySelector('svg')).not.toBeNull();
     expect(root.classList.contains('stp-lt-marker--custom')).toBe(false);
-    expect(headingOf(root).hidden).toBe(false);
+    expect(headingOf(root)).toBeNull();
     paintMarkerContent(root, paint({ iconUrl: FROSTY }));
     expect(badgeOf(root).querySelector('img')).not.toBeNull();
   });

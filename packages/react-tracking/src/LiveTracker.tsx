@@ -44,6 +44,8 @@ export interface LiveTrackerLabels {
   lastSeen: (minutes: number) => string;
   /** Caption suffix for a tractor the driver has marked broke down. */
   brokeDown: string;
+  /** The button that brings the tractors back into view. */
+  showTractors: string;
 }
 
 export interface LiveTrackerProps {
@@ -98,6 +100,7 @@ const DEFAULT_LABELS: LiveTrackerLabels = {
   missingGoogleMapsApiKey: 'LiveTracker needs a Google Maps API key — pass googleMapsApiKey',
   missingPublishableKey: 'LiveTracker needs a SnowTracker publishable key — pass publishableKey',
   mapsLoadError: 'The map couldn’t load.',
+  showTractors: 'Show tractors',
   brokeDown: 'Broke down',
   lastSeen: (minutes) =>
     minutes < 1
@@ -309,8 +312,14 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
           zoom: initial.defaultCenter ? (initial.defaultZoom ?? DEFAULT_ZOOM) : NEUTRAL_VIEW.zoom,
           clickableIcons: false,
           streetViewControl: false,
-          mapTypeControl: false,
           fullscreenControl: false,
+          // Plain +/- and Map/Satellite, which visitors recognise (Aaron,
+          // 2026-11-01). Google's newer camera control is a single pad in
+          // the corner nobody knew to press, so it is off.
+          zoomControl: true,
+          cameraControl: false,
+          mapTypeControl: true,
+          mapTypeControlOptions: { mapTypeIds: ['roadmap', 'hybrid'] },
         });
         mapRef.current = map;
         created = new MarkerLayer(api, map, document);
@@ -341,9 +350,7 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
       const key = `route:${activeRouteId}`;
       if (framedForRef.current !== key) {
         framedForRef.current = key;
-        // Quiet markers shouldn't drag the view out to where a tractor was.
-        const reporting = visible.filter((t) => !t.stale);
-        layer.fit(reporting.length > 0 ? reporting : visible);
+        frameTractors(layer, visible);
       }
       return;
     }
@@ -365,6 +372,10 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
   }, [layer, visible, anyOut, activeRouteId, snapshot]);
 
   // ── render ─────────────────────────────────────────────────────────────────
+  // A visitor who pans or zooms away loses the tractors; this brings them back.
+  const showTractors = (): void => {
+    if (layer && visible.length > 0) frameTractors(layer, visible);
+  };
   const rootClass = className ? `stp-lt ${className}` : 'stp-lt';
 
   if (configError !== null) {
@@ -427,6 +438,14 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          className="stp-lt-button"
+          disabled={panel !== null || !layer || visible.length === 0}
+          onClick={showTractors}
+        >
+          {labels.showTractors}
+        </button>
       </div>
       <div className="stp-lt-stage">
         <div className="stp-lt-map" ref={mapElRef} />
@@ -439,4 +458,15 @@ export function LiveTracker(props: LiveTrackerProps): ReactElement {
       </div>
     </div>
   );
+}
+
+/** Frame the tractors. Quiet markers shouldn't drag the view out to where a tractor was. */
+function frameTractors(layer: MarkerLayer, visible: readonly (LatLngLike & { stale: boolean })[]): void {
+  const reporting = visible.filter((t) => !t.stale);
+  layer.fit(reporting.length > 0 ? reporting : visible);
+}
+
+interface LatLngLike {
+  lat: number;
+  lng: number;
 }

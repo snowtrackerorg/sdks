@@ -1,6 +1,10 @@
 // What a tractor looks like on the map — the same round badge, vehicle glyph
 // and caption the SnowTracker ops app draws, plus the route's colour as a ring
-// and an arrow for the heading. Pure DOM, no Maps API, no React.
+// and ONE pointer, down to the fix. Pure DOM, no Maps API, no React.
+//
+// No heading arrow (Aaron, 2026-11-01): a second tab swinging round the
+// badge read as a marker with two pointers, aimed at odd corners. The
+// pointer below the badge is the only one, and always marks the spot.
 //
 // When the driver picked their own icon (iconUrl, ENG-173) the marker is that
 // image instead, centred on the fix — no badge circle, no pointer, no heading arrow,
@@ -16,6 +20,7 @@ export interface MarkerPaint {
   iconUrl?: string | null;
   /** Route colour for the ring; null falls back to the default navy. */
   ringColor: string | null;
+  /** Not drawn (one pointer only, 2026-11-01); kept so callers need not change. */
   headingDeg: number | null;
   stale: boolean;
   /** The driver has the tractor marked broke down: a red wrench on the badge's shoulder. */
@@ -30,8 +35,6 @@ export interface MarkerPaint {
 export function createMarkerContent(doc: Document, paint: MarkerPaint): HTMLElement {
   const root = doc.createElement('div');
   root.className = 'stp-lt-marker';
-  const heading = doc.createElement('div');
-  heading.className = 'stp-lt-marker__heading';
   const badge = doc.createElement('div');
   badge.className = 'stp-lt-marker__badge';
   const label = doc.createElement('div');
@@ -40,7 +43,7 @@ export function createMarkerContent(doc: Document, paint: MarkerPaint): HTMLElem
   wrench.className = 'stp-lt-marker__broke-down';
   wrench.innerHTML = BROKE_DOWN_BADGE_SVG; // our own constant SVG, never API text
   wrench.hidden = true;
-  root.append(heading, badge, wrench, label);
+  root.append(badge, wrench, label);
   paintMarkerContent(root, paint);
   return root;
 }
@@ -91,13 +94,4 @@ export function paintMarkerContent(root: HTMLElement, paint: MarkerPaint): void 
 
   const label = root.querySelector<HTMLElement>('.stp-lt-marker__label');
   if (label && label.textContent !== paint.caption) label.textContent = paint.caption;
-
-  const heading = root.querySelector<HTMLElement>('.stp-lt-marker__heading');
-  if (heading) {
-    const deg = paint.headingDeg;
-    const known = typeof deg === 'number' && Number.isFinite(deg);
-    // A picked icon is drawn as the office drew it: no heading arrow.
-    heading.hidden = !known || useImage;
-    if (known) heading.style.transform = `rotate(${deg}deg)`;
-  }
 }
