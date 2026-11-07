@@ -37,11 +37,15 @@ export const LIVE_TRACKER_CSS = `
 .stp-lt-marker--broke-down .stp-lt-marker__badge{border-color:#d92d20}
 .stp-lt-marker--broke-down .stp-lt-marker__badge::after{border-top-color:#d92d20}
 .stp-lt-marker__label{position:absolute;left:22px;bottom:14px;white-space:nowrap;font:600 12px/1.3 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:${NAVY};background:rgba(255,255,255,.92);padding:2px 6px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.stp-lt-marker--custom .stp-lt-marker__badge{bottom:-20px;width:40px;height:40px;border:0;border-radius:0;background:transparent;box-shadow:none}
+.stp-lt-marker--custom .stp-lt-marker__badge{bottom:4px;width:46px;height:46px;border:0;border-radius:0;background:transparent;box-shadow:none}
 .stp-lt-marker--custom .stp-lt-marker__badge::after{display:none}
-.stp-lt-marker__img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));user-select:none;-webkit-user-drag:none}
-.stp-lt-marker--custom .stp-lt-marker__label{left:24px;bottom:-9px}
-.stp-lt-marker--custom .stp-lt-marker__broke-down{left:8px;bottom:8px}
+.stp-lt-marker__img{width:100%;height:100%;object-fit:contain;object-position:50% 100%;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));user-select:none;-webkit-user-drag:none}
+.stp-lt-marker__dot{display:none}
+.stp-lt-marker--custom .stp-lt-marker__dot{display:block;position:absolute;left:0;bottom:0;transform:translate(-50%,50%);width:10px;height:10px;box-sizing:border-box;border-radius:9999px;background:var(--stp-lt-ring,${NAVY});border:2px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.stp-lt-marker--custom .stp-lt-marker__label{left:28px;bottom:18px}
+.stp-lt-marker--custom .stp-lt-marker__broke-down{left:12px;bottom:38px}
+.stp-lt-marker--custom.stp-lt-marker--broke-down .stp-lt-marker__img{filter:drop-shadow(0 0 2px #d92d20) drop-shadow(0 0 3px #d92d20)}
+.stp-lt-marker--custom.stp-lt-marker--broke-down .stp-lt-marker__dot{background:#d92d20}
 `;
 
 /** Inject the stylesheet once per document. Safe to call from every mount. */

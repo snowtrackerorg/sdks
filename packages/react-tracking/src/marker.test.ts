@@ -34,7 +34,7 @@ describe('marker content — the driver’s own icon (ENG-173)', () => {
     expect(badgeOf(root).querySelector('svg')).not.toBeNull();
   });
 
-  it('draws the picked image instead, centred, with no heading arrow and no rotation', () => {
+  it('draws the picked image instead of the badge, with no heading arrow and no rotation', () => {
     const root = createMarkerContent(document, paint({ iconUrl: FROSTY }));
     const img = badgeOf(root).querySelector('img');
     expect(img).not.toBeNull();
@@ -46,6 +46,12 @@ describe('marker content — the driver’s own icon (ENG-173)', () => {
     expect(headingOf(root)).toBeNull();
     // The caption is still there, naming the vehicle.
     expect(root.querySelector('.stp-lt-marker__label')?.textContent).toBe('Tractor 4');
+  });
+
+  it('carries the route-colour dot that marks the fix under a custom icon', () => {
+    const root = createMarkerContent(document, paint({ iconUrl: FROSTY, ringColor: '#e11d48' }));
+    expect(root.querySelector('.stp-lt-marker__dot')).not.toBeNull();
+    expect(root.style.getPropertyValue('--stp-lt-ring')).toBe('#e11d48');
   });
 
   it('keeps the same <img> across repaints of the same URL', () => {
@@ -100,7 +106,9 @@ describe('marker content — broke down over a picked icon (ENG-170 + ENG-173)',
     expect(root.classList.contains('stp-lt-marker--custom')).toBe(true);
     expect(root.classList.contains('stp-lt-marker--broke-down')).toBe(true);
     // Later in the DOM than the image, so it paints on top of it.
-    expect(badgeOf(root).compareDocumentPosition(wrenchOf(root)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      badgeOf(root).compareDocumentPosition(wrenchOf(root)) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('drops the wrench when he is back on the road, keeping the image', () => {
