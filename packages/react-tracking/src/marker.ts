@@ -6,10 +6,12 @@
 // badge read as a marker with two pointers, aimed at odd corners. The
 // pointer below the badge is the only one, and always marks the spot.
 //
-// When the driver picked their own icon (iconUrl, ENG-173) the marker is that
-// image instead, centred on the fix — no badge circle, no pointer, no heading arrow,
-// and the image is never rotated. If the image fails to load, the marker goes
-// back to the glyph for that URL.
+// When the office set a custom icon (iconUrl, ENG-173) the marker is that
+// image instead — no badge circle, no pointer, no heading arrow, never rotated.
+// It REPLACES the whole marker (Aaron, 2026-11-06: "these markers usually look
+// like tractors"): about 1.35× the badge, aspect kept, standing on the fix,
+// with a small dot in the route's colour marking the exact spot. If the image
+// fails to load, the marker goes back to the glyph for that URL.
 import { BROKE_DOWN_BADGE_SVG, vehicleIconSvg } from './vehicleIcons.js';
 
 export interface MarkerPaint {
@@ -18,7 +20,7 @@ export interface MarkerPaint {
   icon: string;
   /** The driver's own icon (an http(s) PNG URL), or null for the `icon` glyph. */
   iconUrl?: string | null;
-  /** Route colour for the ring; null falls back to the default navy. */
+  /** Route colour for the ring (the dot under a custom icon); null falls back to the default navy. */
   ringColor: string | null;
   /** Not drawn (one pointer only, 2026-11-01); kept so callers need not change. */
   headingDeg: number | null;
@@ -43,7 +45,10 @@ export function createMarkerContent(doc: Document, paint: MarkerPaint): HTMLElem
   wrench.className = 'stp-lt-marker__broke-down';
   wrench.innerHTML = BROKE_DOWN_BADGE_SVG; // our own constant SVG, never API text
   wrench.hidden = true;
-  root.append(badge, wrench, label);
+  // The route-colour dot on the fix — shown only for a custom icon (CSS).
+  const dot = doc.createElement('div');
+  dot.className = 'stp-lt-marker__dot';
+  root.append(dot, badge, wrench, label);
   paintMarkerContent(root, paint);
   return root;
 }
